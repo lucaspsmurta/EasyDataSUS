@@ -32,6 +32,24 @@ DATE32_COLUMNS = {
     "srag": {"dt_nasc"},
 }
 
+# Reload migrated SRAG columns from CSV to replace ALTER TABLE defaults.
+SRAG_REQUIRED_COLUMNS = {
+    "tp_idade": "Nullable(Int32)",
+    "hematologi": "Int32",
+    "hepatica": "Int32",
+    "neurologic": "Int32",
+}
+
+
+def _ensure_srag_columns(client, datasets: Sequence[str]) -> None:
+    if "surtos-srag" not in datasets:
+        return
+    existing = dict(_table_schema(client, "srag"))
+    for column, type_name in SRAG_REQUIRED_COLUMNS.items():
+        if column not in existing:
+            logger.info("Adicionando coluna ausente srag.%s (%s)", column, type_name)
+            client.command(f"ALTER TABLE srag ADD COLUMN IF NOT EXISTS {column} {type_name}")
+
 
 def get_clickhouse_client():
     return clickhouse_connect.get_client(
@@ -163,6 +181,12 @@ def _preflight(client, datasets: Sequence[str], explicit_file: str = None):
     for dataset in datasets:
         table_name = get_table_name(dataset)
         schema = _table_schema(client, table_name)
+        if dataset == "surtos-srag":
+            existing = dict(schema)
+            for column, type_name in SRAG_REQUIRED_COLUMNS.items():
+                if column not in existing:
+                    logger.info("Coluna srag.%s será adicionada antes da carga", column)
+                    schema.append((column, type_name))
         files = _dataset_files(dataset, explicit_file if len(datasets) == 1 else None)
         if not files or any(not path.exists() for path in files):
             raise FileNotFoundError(f"CSV não encontrado para {dataset}: {files}")
@@ -172,6 +196,14 @@ def _preflight(client, datasets: Sequence[str], explicit_file: str = None):
             handle, reader, encoding = _open_csv(path)
             try:
                 mapping = _header_mapping(reader.fieldnames or [], schema)
+                if dataset == "surtos-srag":
+                    missing = sorted(set(SRAG_REQUIRED_COLUMNS) - set(mapping))
+                    if missing:
+                        raise ValueError(
+                            f"CSV {path.name} não contém campos obrigatórios de SRAG: "
+                            + ", ".join(missing)
+                            + ". Carga abortada antes de alterar ou limpar tabelas."
+                        )
             finally:
                 handle.close()
             if not mapping:
@@ -240,8 +272,6 @@ def reload_datasets(
         raise ValueError("--file exige exatamente um --dataset")
 
     client = get_clickhouse_client()
-    if not dry_run:
-        _ensure_date32_columns(client, datasets)
     plans = _preflight(client, datasets, explicit_file)
     for dataset, plan in plans.items():
         logger.info(
@@ -256,6 +286,10 @@ def reload_datasets(
         logger.info("Dry-run concluído: nenhuma tabela foi alterada")
         return {}
 
+    _ensure_srag_columns(client, datasets)
+    _ensure_date32_columns(client, datasets)
+    # Read the actual schema again after migrations (including Date32 types).
+    plans = _preflight(client, datasets, explicit_file)
     _truncate_tables(client, plans)
     return {
         dataset: _load_plan(client, dataset, plan, batch_size)

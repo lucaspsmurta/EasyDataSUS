@@ -123,7 +123,7 @@ class MultibaseServiceTests(unittest.TestCase):
 
     def test_accepts_canonical_preaggregated_srag_ubs_sql(self):
         relationships = relationship_service.find_relationships(["surtos-srag", "atencao-basica"])
-        sql = multibase_service.build_deterministic_fallback_sql(["surtos-srag", "atencao-basica"], relationships)
+        sql = multibase_service.build_deterministic_fallback_sql(["surtos-srag", "atencao-basica"], relationships, "Liste municipios com registros de SRAG e UBS")
         self.assertIsNotNone(sql)
         validation = multibase_service.validate_sql(sql, ["surtos-srag", "atencao-basica"], relationships)
         self.assertTrue(validation.valid)
@@ -131,7 +131,7 @@ class MultibaseServiceTests(unittest.TestCase):
 
     def test_rejects_wrong_join_key(self):
         relationships = relationship_service.find_relationships(["surtos-srag", "atencao-basica"])
-        sql = multibase_service.build_deterministic_fallback_sql(["surtos-srag", "atencao-basica"], relationships)
+        sql = multibase_service.build_deterministic_fallback_sql(["surtos-srag", "atencao-basica"], relationships, "Liste municipios com registros de SRAG e UBS")
         self.assertIsNotNone(sql)
         invalid_sql = sql.replace("s.ibge = u.ibge", "s.ibge = u.uf")
         validation = multibase_service.validate_sql(invalid_sql, ["surtos-srag", "atencao-basica"], relationships)
@@ -234,14 +234,14 @@ INNER JOIN facilities_by_city AS f
         )
         self.assertTrue(validation.valid, validation.errors)
 
-    def test_srag_ubs_ranking_defaults_to_top_ten(self):
+    def test_srag_ubs_ambiguous_ranking_does_not_invent_top_ten(self):
         relationships = relationship_service.find_relationships(["surtos-srag", "atencao-basica"])
         sql = multibase_service.build_deterministic_fallback_sql(
             ["surtos-srag", "atencao-basica"],
             relationships,
             "Liste os municípios com maior número de notificações de SRAG e suas UBS",
         )
-        self.assertIn("LIMIT 10", sql)
+        self.assertIsNone(sql)
 
     def test_rejects_additional_unauthorized_table(self):
         relationships = relationship_service.find_relationships(["surtos-srag", "atencao-basica"])
@@ -251,7 +251,7 @@ INNER JOIN facilities_by_city AS f
 
     def test_does_not_confuse_cte_with_physical_table(self):
         relationships = relationship_service.find_relationships(["surtos-srag", "atencao-basica"])
-        sql = multibase_service.build_deterministic_fallback_sql(["surtos-srag", "atencao-basica"], relationships)
+        sql = multibase_service.build_deterministic_fallback_sql(["surtos-srag", "atencao-basica"], relationships, "Liste municipios com registros de SRAG e UBS")
         validation = multibase_service.validate_sql(sql, ["surtos-srag", "atencao-basica"], relationships)
         self.assertTrue(validation.valid)
         self.assertNotIn("srag_by_municipality", validation.tables)

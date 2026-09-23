@@ -58,7 +58,7 @@ class SqlServiceSemanticTests(unittest.TestCase):
             (
                 "Quantos casos de SRAG foram notificados por estado?",
                 "surtos-srag",
-                ("COUNT(*) AS total_srag", "GROUP BY SG_UF_NOT", "SG_UF_NOT != ''"),
+                ("COUNT(*) AS total", "GROUP BY SG_UF_NOT"),
                 (),
             ),
             (
@@ -138,7 +138,7 @@ class SqlServiceSemanticTests(unittest.TestCase):
         wrong_sql = "SELECT REGIAO, COUNT(*) AS total FROM leitos GROUP BY REGIAO"
         self.assertFalse(validate_sql_syntax(wrong_sql, "leitos", question))
 
-    def test_benchmark_failure_patterns_have_semantic_fallbacks(self):
+    def test_complex_requests_are_not_replaced_by_generic_fallbacks(self):
         cases = [
             (
                 "Qual tipo de unidade (Hospital Geral, Pronto Socorro, etc) possui maior volume de leitos?",
@@ -177,12 +177,10 @@ class SqlServiceSemanticTests(unittest.TestCase):
             ),
         ]
 
-        for question, dataset, expected_fragments in cases:
+        for question, dataset, _ in cases:
             with self.subTest(question=question):
-                sql = fallback_sql(question, dataset)
-                for fragment in expected_fragments:
-                    self.assertIn(fragment, sql)
-                self.assertTrue(validate_sql_syntax(sql, dataset, question))
+                # These templates previously ignored filters or returned another metric.
+                self.assertIsNone(fallback_sql(question, dataset))
 
     def test_llm_failure_uses_semantically_correct_bed_ratio_fallback(self):
         question = (

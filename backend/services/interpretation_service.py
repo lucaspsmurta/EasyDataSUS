@@ -300,7 +300,8 @@ def interpret_result(
     model_name: str = "deepseek-local",
     dataset: str = "covid-19-vacinacao",
     factual_summary: str = "",
-) -> str:
+    return_mode: bool = False,
+) -> str | tuple[str, str]:
     """
     Interpreta resultado usando LLM com abordagem TIPO-ESPECÍFICA.
     
@@ -314,21 +315,24 @@ def interpret_result(
         dataset: Qual dataset (para contexto)
     
     Returns:
-        String com interpretação em linguagem natural
+        Texto por padrão; com return_mode=True, (texto, modo realmente executado).
     """
     
+    def pack(text, mode):
+        return (text, mode) if return_mode else text
+
     logger.info(f"Interpretando resultado para: {question[:80]}...")
     
     # Bloqueio crítico: checar se é erro
     if isinstance(result, dict) and "error" in result:
         error_msg = result.get("message", result["error"])
         logger.error(f"Resultado é erro: {error_msg}")
-        return f"Desculpe, ocorreu um erro ao executar a consulta: {error_msg}"
+        return pack(f"Desculpe, ocorreu um erro ao executar a consulta: {error_msg}", "deterministic_error")
     
     # Checar se está vazio
     if not result or (isinstance(result, list) and len(result) == 0):
         logger.warning("Resultado da query vazio")
-        return "Não encontrei registros que correspondam à sua pergunta. Tente reformular a pergunta ou verifique os filtros."
+        return pack("Não encontrei registros que correspondam à sua pergunta. Tente reformular a pergunta ou verifique os filtros.", "deterministic_empty")
     
     try:
         llm = get_llm(model_name)
@@ -372,19 +376,19 @@ def interpret_result(
         
         if not response or not response.strip():
             logger.warning("Resposta vazia do LLM, usando fallback")
-            return factual_summary or _fallback_interpretation(result, question)
+            return pack(factual_summary or _fallback_interpretation(result, question), "deterministic_fallback")
         
         interpretation = response.strip()
         logger.info(f"Interpretação gerada com sucesso: {len(interpretation)} caracteres (tipo: {result_type})")
         
-        return interpretation
+        return pack(interpretation, "llm_grounded")
     
     except Exception as e:
         error_str = str(e)
         logger.error(f"Erro ao interpretar resultado: {e}")
         
         # Usa resumo factual se a LLM falhar.
-        return factual_summary or _fallback_interpretation(result, question)
+        return pack(factual_summary or _fallback_interpretation(result, question), "deterministic_fallback")
 
 
 def _build_interpretation_prompt(question: str, result_data: str, result_count: int, dataset_context: str, result_type: str = "unknown", result: list = None) -> str:

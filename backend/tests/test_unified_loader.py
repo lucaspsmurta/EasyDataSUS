@@ -3,7 +3,8 @@ import sys
 import unittest
 from datetime import date
 from pathlib import Path
-from unittest.mock import patch
+from unittest.mock import patch, Mock
+from tempfile import TemporaryDirectory
 
 
 BACKEND_DIR = Path(__file__).resolve().parents[1]
@@ -15,10 +16,57 @@ from etl.load_csv import (
     _dataset_files,
     _header_mapping,
     load_csv,
+    reload_datasets,
+    _ensure_srag_columns,
+    _preflight,
+    _iter_batches,
+    SRAG_REQUIRED_COLUMNS,
 )
 
 
 class UnifiedLoaderTests(unittest.TestCase):
+    def test_srag_migration_only_adds_missing_columns(self):
+        client = Mock()
+        with patch("etl.load_csv._table_schema", return_value=[("tp_idade", "Nullable(Int32)")]):
+            _ensure_srag_columns(client, ["surtos-srag"])
+        self.assertEqual(3, client.command.call_count)
+        self.assertTrue(all("ADD COLUMN IF NOT EXISTS" in c.args[0] for c in client.command.call_args_list))
+        client.reset_mock()
+        with patch("etl.load_csv._table_schema", return_value=list(SRAG_REQUIRED_COLUMNS.items())):
+            _ensure_srag_columns(client, ["surtos-srag"])
+        client.command.assert_not_called()
+        _ensure_srag_columns(client, ["leitos"])
+        client.command.assert_not_called()
+
+    def test_new_columns_are_loaded_from_csv(self):
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "srag.csv"
+            path.write_text("TP_IDADE;HEMATOLOGI;HEPATICA;NEUROLOGIC\n3;1;2;1\n", encoding="utf-8")
+            with patch("etl.load_csv._table_schema", return_value=[]), patch("etl.load_csv._dataset_files", return_value=[path]):
+                plan = _preflight(Mock(), ["surtos-srag"])["surtos-srag"]
+            _, encoding, mapping = plan["files"][0]
+            batches = list(_iter_batches(path, encoding, plan["schema"], mapping, 10))
+            self.assertEqual([[(3, 1, 2, 1)]], batches)
+
+    def test_missing_source_fields_abort_before_mutation(self):
+        client = Mock()
+        with TemporaryDirectory() as directory:
+            path = Path(directory) / "srag.csv"
+            path.write_text("NU_NOTIFIC\n123\n", encoding="utf-8")
+            with patch("etl.load_csv.get_clickhouse_client", return_value=client), patch("etl.load_csv._table_schema", return_value=[("nu_notific", "Int64")]), patch("etl.load_csv._dataset_files", return_value=[path]):
+                with self.assertRaisesRegex(ValueError, "campos obrigatórios"):
+                    reload_datasets(["surtos-srag"])
+            client.command.assert_not_called()
+            client.insert.assert_not_called()
+
+    def test_dry_run_does_not_migrate_or_truncate(self):
+        client = Mock()
+        with patch("etl.load_csv.get_clickhouse_client", return_value=client), patch("etl.load_csv._preflight", return_value={}), patch("etl.load_csv._ensure_srag_columns") as migrate, patch("etl.load_csv._ensure_date32_columns") as dates:
+            reload_datasets(["surtos-srag"], dry_run=True)
+        migrate.assert_not_called()
+        dates.assert_not_called()
+        client.command.assert_not_called()
+
     def test_every_configured_dataset_has_csv(self):
         missing = {
             dataset: _dataset_files(dataset)

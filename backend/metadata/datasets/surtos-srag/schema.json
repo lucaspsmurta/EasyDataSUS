@@ -77,15 +77,43 @@
     },
     "NU_IDADE_N": {
       "type": "INT",
-      "description": "Idade do paciente em anos",
+      "description": "Magnitude da idade; interpretar com TP_IDADE, não presumir anos.",
       "minimo": 0,
       "maximo": 150,
       "exemplo": "10",
       "importante": true
     },
+    "HEMATOLOGI": {
+      "type": "INT",
+      "description": "Indicador de doença hematológica: 1=sim, 2=não, 9=ignorado. Pode ocorrer simultaneamente com outros indicadores.",
+      "valores_possiveis": [
+        1,
+        2,
+        9
+      ]
+    },
+    "HEPATICA": {
+      "type": "INT",
+      "description": "Indicador de doença hepática: 1=sim, 2=não, 9=ignorado. Pode ocorrer simultaneamente com outros indicadores.",
+      "valores_possiveis": [
+        1,
+        2,
+        9
+      ]
+    },
+    "NEUROLOGIC": {
+      "type": "INT",
+      "description": "Indicador de doença neurológica: 1=sim, 2=não, 9=ignorado. Pode ocorrer simultaneamente com outros indicadores.",
+      "valores_possiveis": [
+        1,
+        2,
+        9
+      ]
+    },
     "TP_IDADE": {
       "type": "INT",
-      "description": "Tipo de idade: 1=anos, 2=meses, 3=dias",
+      "description": "Unidade de NU_IDADE_N: 1=dias, 2=meses, 3=anos. Idade/unidade ausente ou desconhecida não deve virar zero.",
+      "source": "https://s3.sa-east-1.amazonaws.com/ckan.saude.gov.br/SRAG/pdfs/dicionario_de_dados_srag_hosp_17_02_2022.pdf",
       "valores_possiveis": [1, 2, 3],
       "importante": false
     },

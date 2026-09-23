@@ -8,6 +8,9 @@ from pathlib import Path
 # Adicionar diretório parent (backend/) ao path para permitir imports
 sys.path.insert(0, str(Path(__file__).parent.parent))
 
+from services.analytical_contract import SQL_INSTRUCTIONS, contract_errors, prepare_sql
+from services.generation_diagnostics import record
+from services.safe_fallback import fallback_sql
 from llm.router import get_llm
 from config.datasets import get_table_name, get_dataset_config
 
@@ -64,72 +67,25 @@ def _format_examples(examples) -> str:
     return ""
 
 def extract_sql(text: str) -> str:
-    """Extrai SQL da resposta do LLM com múltiplas estratégias"""
-    
-    if not text:
+    """Keep complete CTEs; reject partial SQL, prose and multiple statements."""
+    from sqlglot import parse, exp
+    if not isinstance(text, str) or not text.strip():
         return None
-    
-    # Limpar backticks e artefatos no final de tudo
-    text = text.rstrip().rstrip('`')
-    
-    # 1. Try markdown code block ```sql
-    match = re.search(r"```(?:sql)?\s*((?:WITH|SELECT)\s+.+?)(?:```|$)", text, re.DOTALL | re.IGNORECASE)
-    if match:
-        sql = match.group(1).strip().rstrip('`')
-        if sql and sql.upper().startswith("SELECT") and "FROM" in sql.upper():
-            logger.debug(f"SQL extraído do bloco markdown: {sql[:50]}...")
-            return sql
-    
-    # 2. Extract SELECT ... pattern (mais específico e robusto)
-    # Procura por SELECT até uma quebra natural: fim de parágrafo (dupla quebra), backtick, ou fim do texto
-    match = re.search(
-        r"((?:WITH|SELECT)\s+.+?)(?:\n\n|```|$)",
-        text,
-        re.DOTALL | re.IGNORECASE
-    )
-    if match:
-        sql = match.group(1).strip().rstrip('`').rstrip()
-        # Remover qualquer explicação ou comentário no final
-        sql = sql.split('\n\n')[0].strip()
-        
-        # Validar que tem WHERE com comparação se necessário
-        if "WHERE" in sql.upper():
-            # Se tem WHERE, deve ter = ou IN ou LIKE ou comparador
-            if not any(op in sql.upper() for op in [" = ", " IN ", " LIKE ", " > ", " < "]):
-                logger.warning(f"SQL tem WHERE mas sem operador de comparação: {sql[:100]}")
-                return None
-        if sql and (sql.upper().startswith("SELECT") or sql.upper().startswith("WITH")) and "FROM" in sql.upper():
-            logger.debug(f"SQL extraído com regex SELECT...LIMIT: {sql[:50]}...")
-            return sql
-    
-    # 3. Fallback simples: tudo que começa com SELECT até primeira quebra de linha dupla ou backtick
-    if "SELECT" in text.upper() or "WITH" in text.upper():
-        select_idx = text.upper().find("SELECT")
-        with_idx = text.upper().find("WITH")
-        if with_idx != -1 and (select_idx == -1 or with_idx < select_idx):
-            idx = with_idx
-        else:
-            idx = select_idx
-        # Pegar desde SELECT até LIMIT, backtick, ou fim de parágrafo
-        raw = text[idx:]
-        # Remove backticks
-        raw = raw.rstrip('`')
-        # Pega até quebra dupla, backtick, ou fim
-        candidates = [
-            raw.split("\n\n")[0],  # Até quebra dupla
-            raw.split("```")[0],   # Até backtick
-            raw.split("\n```")[0], # Até backtick com newline
-        ]
-        
-        for candidate in candidates:
-            candidate = candidate.strip().rstrip('`')
-            # Validar mínima integridade
-            if (candidate.upper().startswith("SELECT") or candidate.upper().startswith("WITH")) and "FROM" in candidate.upper():
-                logger.debug(f"SQL extraído por fallback simples: {candidate[:50]}...")
-                return candidate
-    
-    logger.warning(f"Não conseguiu extrair SQL válido de: {text[:100]}")
-    return None
+    blocks = re.findall(r"```(?:sql)?\s*([\s\S]*?)```", text, re.IGNORECASE)
+    if len(blocks) > 1:
+        return None
+    candidate = blocks[0].strip() if blocks else text.strip()
+    start = re.search(r"\b(?:WITH|SELECT)\b", candidate, re.IGNORECASE)
+    if not start:
+        return None
+    candidate = candidate[start.start():].strip()
+    try:
+        statements = parse(candidate, read="clickhouse")
+        if len(statements) != 1 or not isinstance(statements[0], exp.Query):
+            return None
+        return candidate.rstrip(';').strip()
+    except Exception:
+        return None
 
 def validate_sql_syntax(sql: str, dataset: str = "covid-19-vacinacao", original_question: str = "") -> bool:
     """
@@ -179,13 +135,6 @@ def validate_sql_syntax(sql: str, dataset: str = "covid-19-vacinacao", original_
             logger.warning(f"ERRO CRÍTICO: Pergunta sobre 'quantas/quantos' gerou SELECT * (deve ser COUNT): {sql[:100]}")
             return False
     
-    # CRÍTICO: Se tem WHERE, DEVE ter operador de comparação
-    if "WHERE" in sql_clean:
-        has_comparison = any(op in sql_clean for op in [" = ", " IN ", " LIKE ", " > ", " < ", " >= ", " <= ", " != ", " <> "])
-        if not has_comparison:
-            logger.warning(f"SQL tem WHERE mas FALTA operador de comparação: {sql[:100]}")
-            return False
-    
     # Verificar comandos perigosos
     forbidden = ["DROP", "DELETE", "INSERT", "UPDATE", "ALTER", "CREATE", "TRUNCATE"]
     for cmd in forbidden:
@@ -201,7 +150,7 @@ def validate_sql_syntax(sql: str, dataset: str = "covid-19-vacinacao", original_
     asks_ranking = any(term in question_lower for term in ("maior", "maiores", "mais", "ranking", "top"))
 
     if dataset == "covid-19-vacinacao" and asks_by_state and asks_ranking:
-        if "GROUP BY" not in sql_clean or "COUNT(" not in sql_clean:
+        if "GROUP BY" not in sql_clean or not re.search(r"\b(?:COUNT|UNIQEXACT)\s*\(", sql_clean):
             logger.warning("Ranking de vacinação por estado exige GROUP BY e COUNT")
             return False
         if "MAX(PACIENTE_ENDERECO_UF)" in sql_clean:
@@ -234,7 +183,6 @@ def validate_sql_syntax(sql: str, dataset: str = "covid-19-vacinacao", original_
         required_fragments = (
             "SUM(LEITOS_SUS)",
             "SUM(LEITOS_EXISTENTES)",
-            "GROUP BY",
             "MAX(COMP)",
         )
         if not all(fragment in sql_clean for fragment in required_fragments) or "/" not in sql_clean:
@@ -248,18 +196,8 @@ def validate_sql_syntax(sql: str, dataset: str = "covid-19-vacinacao", original_
             return False
 
     if dataset == "surtos-srag" and asks_by_state:
-        if "GROUP BY" not in sql_clean or "COUNT(" not in sql_clean:
+        if "GROUP BY" not in sql_clean or not re.search(r"\b(?:COUNT|UNIQEXACT)\s*\(", sql_clean):
             logger.warning("Notificações de SRAG por estado exigem GROUP BY e COUNT")
-            return False
-
-    if dataset == "surtos-srag" and asks_ratio and "hospitaliza" in question_lower:
-        if "COUNTIF(HOSPITAL=1)" not in sql_compact or "/" not in sql_clean:
-            logger.warning("Taxa de hospitalização em SRAG exige countIf(hospital = 1) dividido pelo total")
-            return False
-
-    if dataset == "surtos-srag" and asks_ratio and "uti" in question_lower:
-        if "COUNTIF(UTI=1)" not in sql_compact or "/" not in sql_clean:
-            logger.warning("Taxa de UTI em SRAG exige countIf(uti = 1) dividido pelo total")
             return False
 
     if dataset == "surtos-srag" and "distribuição" in question_lower and "sintoma" in question_lower:
@@ -274,14 +212,8 @@ def validate_sql_syntax(sql: str, dataset: str = "covid-19-vacinacao", original_
             logger.warning("Proporção de comorbidades exige campos de comorbidade divididos pelo total")
             return False
 
-    if dataset == "surtos-srag" and any(term in question_lower for term in ("agente etiológico", "agente etiologico", "sars", "influenza", "vsr")):
-        required_fragments = ("PCR_SARS2", "POS_PCRFLU", "PCR_VSR")
-        if not all(fragment in sql_clean for fragment in required_fragments):
-            logger.warning("Identificação de agente etiológico exige campos laboratoriais PCR")
-            return False
-
     if dataset == "atencao-basica" and asks_municipality and asks_ranking:
-        if "GROUP BY" not in sql_clean or "COUNT(" not in sql_clean:
+        if "GROUP BY" not in sql_clean or not re.search(r"\b(?:COUNT|UNIQEXACT)\s*\(", sql_clean):
             logger.warning("Ranking municipal de UBS exige GROUP BY e COUNT")
             return False
         if "MAX(IBGE)" in sql_clean:
@@ -451,19 +383,19 @@ def _get_sql_rules_for_dataset(dataset: str, schema: dict) -> str:
     rules_map = {
         "covid-19-vacinacao": """
 Regras para vacinação:
-1. Se pergunta tem "quantas" → use COUNT(*)
+1. Conte registros com COUNT(*); pessoas/municípios distintos exigem COUNT(DISTINCT chave).
 2. Se pergunta menciona estado → use paciente_endereco_uf
 3. Se pergunta menciona município → use paciente_endereco_nmMunicipio
 4. Se pergunta menciona NOME DE VACINA ESPECÍFICO (Pfizer, AstraZeneca, etc) → filtre com vacina_nome
 5. Filtre por vacina_nome apenas quando uma vacina específica for mencionada
-6. Se pergunta menciona dose específica ('1ª dose', '2ª dose', 'reforço') → use vacina_descricao_dose
+6. Use vacina_descricao_dose com rótulos '1ª Dose', '2ª Dose', 'Reforço'. Se a pergunta fornecer literal exato, preserve-o; busca sem distinguir maiúsculas exige normalização explícita.
 7. Se pergunta menciona data/período → use vacina_dataAplicacao
 8. Se pergunta menciona "idade" (média, mínima, máxima) → use paciente_idade com AVG/MIN/MAX
 9. Se pergunta menciona "sexo" → use paciente_enumSexoBiologico com COUNT(*) GROUP BY
 10. Não use DATE() ou datetime() - use toDate(), toYYYYMM()
 11. Respeite maiúsculas/minúsculas de estados ('SP', não 'sp')
-12. Não use LIKE com % - use = para exatidão
-13. Se resultado tiver muitas linhas, use LIMIT 100
+12. Igualdade literal usa =; busca parcial sem distinção de maiúsculas usa positionCaseInsensitiveUTF8.
+13. Só use LIMIT quando explicitamente solicitado; preserve todos os empates.
         """,
         "leitos": """
 Regras para leitos:
@@ -481,9 +413,9 @@ Regras para leitos:
 12. Se pergunta menciona região → use REGIAO
 13. Se pergunta menciona cidade/município → use MUNICIPIO
 14. Se pergunta menciona "tipo de gestão" → use TP_GESTAO
-15. Para calcular percentual SUS → (SUM(LEITOS_SUS) / SUM(LEITOS_EXISTENTES)) * 100
+15. Percentual SUS: 100.0 * SUM(LEITOS_SUS) / NULLIF(SUM(LEITOS_EXISTENTES), 0).
 16. Para contar capacidade de leitos, use SUM() em colunas de capacidade
-17. Use LIMIT 100 para resultados grandes
+17. Não limite resultados sem pedido explícito.
 18. Leitos são fotografias por competência: ao agregar capacidade sem período explícito, filtre COMP = (SELECT MAX(COMP) FROM leitos)
 19. Se a pergunta mencionar competência mais recente, o filtro pela maior COMP é obrigatório
         """,
@@ -492,10 +424,10 @@ Regras para SRAG:
 1. Se perguntar por estado/UF, use SG_UF_NOT
 2. Se perguntar por município de notificação, use CO_MUN_NOT
 3. Se perguntar por sexo, use CS_SEXO
-4. Se perguntar por idade, use NU_IDADE_N
+4. Idade usa NU_IDADE_N e TP_IDADE: 1=dias, 2=meses, 3=anos; não trate dias/meses como anos.
 5. Se perguntar por notificação ou período, use DT_NOTIFIC
 6. Se perguntar por início dos sintomas, use DT_SIN_PRI
-7. Para séries temporais, agregue por year(), month() ou week() sobre DT_NOTIFIC
+7. Série mensal usa ano e mês; semana epidemiológica usa SEM_NOT com o ano de DT_NOTIFIC.
 8. Para distribuição por categoria, use GROUP BY com COUNT(*)
 9. Não assuma nomes de municípios quando a base só tiver código IBGE
     """,
@@ -508,7 +440,7 @@ Regras para atenção básica:
 5. Se perguntar por bairro, use BAIRRO
 6. Se perguntar por geolocalização, use LATITUDE e LONGITUDE
 7. Não use SUM() para contar unidades; use COUNT(*)
-8. Para resultados grandes, use LIMIT 100
+8. Não limite resultados sem pedido explícito.
     """,
     }
     
@@ -522,11 +454,12 @@ def generate_sql(
     model_name,
     dataset: str = "covid-19-vacinacao",
     return_mode: bool = False,
+    sql_validator=None,
 ):
     """
-    Gera SQL com few-shot learning e validação.
+    Gera SQL com contexto de domínio e uma tentativa de correção.
     
-    Agora genérico: usa schema do metadata JSON e exemplos específicos por dataset.
+    Usa metadados, contrato analítico e fallback de gramática restrita.
     
     Args:
         question: Pergunta em linguagem natural
@@ -542,36 +475,12 @@ def generate_sql(
     def pack(sql_value, mode):
         return (sql_value, mode) if return_mode else sql_value
 
-    question_lower = question.lower().strip()
     strategy = os.getenv("SQL_GENERATION_STRATEGY", "deterministic_first").lower()
-    has_grouping_request = any(
-        term in question_lower
-        for term in (
-            "por estado", "por uf", "por município", "por municipio",
-            "por cidade", "cada estado", "cada município", "cada municipio",
-        )
-    )
-    is_simple_count = any(
-        question_lower.startswith(prefix)
-        for prefix in ("quantas", "quantos", "qual é o total", "qual a quantidade")
-    ) and not has_grouping_request and dataset in {"covid-19-vacinacao", "surtos-srag", "atencao-basica"}
-    is_bed_availability_list = (
-        dataset == "leitos"
-        and question_lower.startswith("quais")
-        and "uti" in question_lower
-        and any(term in question_lower for term in ("têm", "tem", "possuem", "possui"))
-    )
-    is_supported_grouped_request = (
-        (dataset == "covid-19-vacinacao" and "estado" in question_lower and any(term in question_lower for term in ("maior", "maiores", "mais doses")))
-        or (dataset == "leitos" and "uti" in question_lower and has_grouping_request)
-        or (dataset == "surtos-srag" and "srag" in question_lower and has_grouping_request)
-        or (dataset == "atencao-basica" and any(term in question_lower for term in ("município", "municipio", "cidade")) and any(term in question_lower for term in ("maior", "maiores", "mais")))
-    )
-    if strategy == "deterministic_first" and (
-        is_simple_count or is_bed_availability_list or is_supported_grouped_request
-    ):
-        return pack(fallback_sql(question, dataset), "deterministic_rule")
-    
+    if strategy == "deterministic_first":
+        deterministic = fallback_sql(question, dataset)
+        if deterministic:
+            return pack(deterministic, "deterministic_rule")
+
     llm = get_llm(model_name)
     
     # Schema informado pelos metadados.
@@ -592,631 +501,68 @@ def generate_sql(
     colunas_info = _format_columns_from_schema(schema_info)
     schema_columns = _get_schema_columns(schema_info)
     schema_description = _get_schema_value(schema_info, "descricao", "description", default="N/A")
-    schema_source = _get_schema_value(schema_info, "fonte", "source", default="N/A")
-    
-    # Exemplos específicos do dataset.
-    examples = _generate_examples_for_dataset(dataset, schema_info, table_name)
     
     # Regras específicas do dataset.
     dataset_rules = _get_sql_rules_for_dataset(dataset, schema_info)
 
-    # Detecção rápida para perguntas de contagem.
-    question_lower = question.lower().strip()
-    is_count_question = any(question_lower.startswith(q) for q in ["quantas", "quantos", "qual é o total", "qual é a quantidade"])
-    
-    if is_count_question:
-        # Prompt para perguntas de contagem.
-        prompt = f"""Você é um especialista em SQL ClickHouse. Responda APENAS com SQL válido, nada mais.
-
-TAREFA: Gerar COUNT(*) para: {question}
-
-TABELA: {table_name}
-COLUNAS: {', '.join(schema_columns.keys())}
-
-Regra: para perguntas iniciadas por "quantas/quantos", use COUNT(*).
-
-Exemplo: 
-  Pergunta: "Quantas vacinas em SP?"
-  Resposta: SELECT COUNT(*) AS total_registros FROM vacinacao WHERE paciente_endereco_uf = 'SP'
-
-COLUNAS MAIS USADAS:
-{colunas_info}
-
-SQL para "{question}":"""
-    else:
-        # Prompt para perguntas complexas.
-        prompt = f"""Você é um especialista em SQL para ClickHouse em português.
-
-Instruções:
-- Responda APENAS com uma query SQL válida
-- Sem markdown, sem comentários, sem explicação
-- Comece direto com SELECT
-
-Padrões:
-- "Qual estado teve MAIS..." → GROUP BY estado ORDER BY DESC + SUM() para números
-- "Quantas..." → COUNT(*)
-- "Por estado..." → GROUP BY estado
-- "Quantas em SP..." → COUNT(*) WHERE estado = 'SP'
-- "Qual é a idade média..." → AVG(paciente_idade)
-- "Qual é a idade mínima..." → MIN(paciente_idade)
-- "Qual estado tem mais LEITOS" → SUM(LEITOS_*) GROUP BY estado ORDER BY DESC
-- Para leitos, use SUM() em colunas de capacidade
-- Adicione LIMIT 100 quando o resultado puder retornar muitas linhas
-
-DATASET: {dataset}
-Tabela: {table_name}
+    prompt = f"""Você gera SQL ClickHouse. Responda apenas SQL.
+{SQL_INSTRUCTIONS}
+Dataset: {dataset}; tabela: {table_name}
 Descrição: {schema_description}
-Fonte: {schema_source}
-
-Colunas disponíveis:
+Colunas e significados:
 {colunas_info}
-
-EXEMPLOS DE QUERIES CORRETAS:
-{examples}
-
+Regras do domínio:
 {dataset_rules}
-
-PERGUNTA DO USUÁRIO:
-{question}
-
-Responda apenas com a query SQL:"""
+Pergunta: {question}
+"""
 
     try:
         response = llm.generate(
             prompt,
             num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")),
             temperature=0.0,
-            timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "60")),
+            timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")),
             max_retries=1,
         )
         logger.debug(f"Resposta LLM (primeira 200 chars): {response[:200]}")
         
         sql = extract_sql(response)
-        
-        if not sql:
-            logger.warning("Não conseguiu extrair SQL da resposta")
-            return pack(fallback_sql(question, dataset), "deterministic_fallback")
-        
-        if not validate_sql_syntax(sql, dataset, question):
-            logger.warning(f"SQL falhou validação para dataset {dataset}: {sql}")
-            return pack(fallback_sql(question, dataset), "deterministic_fallback")
-        
+        errors = []
+        for attempt in range(2):
+            try:
+                sql = prepare_sql(sql, question) if sql else None
+                errors = contract_errors(sql, question, schema_columns) if sql else ["SQL vazio"]
+                if sql and not validate_sql_syntax(sql, dataset, question):
+                    errors.append("Consulta inválida ou incompatível com a intenção")
+                if sql:
+                    from services.multibase_service import multibase_service
+                    canonical = multibase_service.canonicalize_sql_identifiers(sql, [dataset])
+                    errors.extend(multibase_service.validate_sql(canonical, [dataset], []).errors)
+                    sql = canonical
+                    if not errors and sql_validator is not None:
+                        errors.extend(sql_validator(sql))
+            except Exception:
+                errors = ["SQL não pôde ser analisado"]
+            record('sql_validation', attempt=attempt + 1, sql=sql, errors=list(errors))
+            if not errors:
+                break
+            logger.warning("SQL rejeitada na tentativa %s: %s", attempt + 1, "; ".join(errors))
+            if attempt == 0:
+                response = llm.generate(
+                    prompt + "\nCorrija a tentativa anterior:\n" + str(sql) +
+                    "\nProblemas: " + "; ".join(errors),
+                    num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")),
+                    temperature=0.0, timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")), max_retries=1,
+                )
+                sql = extract_sql(response)
+        if errors:
+            fallback = fallback_sql(question, dataset)
+            return pack(fallback, "deterministic_fallback" if fallback else "llm_error")
+
         logger.info(f"SQL gerado com sucesso para {dataset}: {sql[:50]}...")
         return pack(sql, "llm")
         
     except Exception as e:
         logger.error(f"Erro ao gerar SQL: {e}")
+        record('sql_generation_exception', error=str(e))
         return pack(fallback_sql(question, dataset), "deterministic_fallback")
-
-def fallback_sql(question: str, dataset: str = "covid-19-vacinacao") -> str:
-    """
-    Fallback robusto quando LLM falha.
-    
-    Detecta padrões comuns em português e gera SQL apropriado.
-    
-    Args:
-        question: Pergunta do usuário
-        dataset: Dataset a usar (padrão: "covid-19-vacinacao")
-    
-    Returns:
-        Query SQL de fallback
-    """
-    logger.info(f"Usando fallback para: {question} (dataset: {dataset})")
-    
-    # Tabela física do dataset.
-    try:
-        table_name = get_table_name(dataset)
-    except ValueError:
-        logger.error(f"Dataset inválido no fallback: {dataset}")
-        return None
-    
-    import re
-    
-    q = question.lower()
-    
-    # Mapeamento de termos para colunas.
-    column_mappings = {
-        "covid-19-vacinacao": {
-            "fabricante": "vacina_nome",
-            "vacina": "vacina_nome",
-            "marca": "vacina_nome",
-            "estado": "paciente_endereco_uf",
-            "municipio": "paciente_endereco_nmMunicipio",
-            "sexo": "paciente_enumSexoBiologico",
-            "idade": "paciente_nrIdade",
-            "dose": "vacina_descricao_dose",
-            "mes": "vacina_dataAplicacao",
-            "mês": "vacina_dataAplicacao",
-            "meses": "vacina_dataAplicacao",
-            "month": "vacina_dataAplicacao",
-            "ano": "vacina_dataAplicacao",
-            "anos": "vacina_dataAplicacao",
-            "year": "vacina_dataAplicacao",
-            "semana": "vacina_dataAplicacao",
-            "semanas": "vacina_dataAplicacao",
-            "week": "vacina_dataAplicacao",
-        },
-        "leitos": {
-            "estado": "UF",
-            "uf": "UF",
-            "regiao": "REGIAO",
-            "região": "REGIAO",
-            "municipio": "MUNICIPIO",
-            "município": "MUNICIPIO",
-            "cidade": "MUNICIPIO",
-            "leito": "LEITOS_EXISTENTES",
-            "leitos": "LEITOS_EXISTENTES",
-            "sus": "LEITOS_SUS",
-            "uti": "UTI_TOTAL_EXIST",
-            "gestao": "TP_GESTAO",
-            "gestão": "TP_GESTAO",
-            "tipo": "DS_TIPO_UNIDADE",
-            "estabelecimento": "NOME_ESTABELECIMENTO",
-            "hospital": "NOME_ESTABELECIMENTO",
-        },
-        "surtos-srag": {
-            "estado": "SG_UF_NOT",
-            "uf": "SG_UF_NOT",
-            "sexo": "CS_SEXO",
-            "idade": "NU_IDADE_N",
-            "idade_n": "NU_IDADE_N",
-            "notificacao": "DT_NOTIFIC",
-            "notificacoes": "DT_NOTIFIC",
-            "data": "DT_NOTIFIC",
-            "ano": "DT_NOTIFIC",
-            "anos": "DT_NOTIFIC",
-            "mes": "DT_NOTIFIC",
-            "mês": "DT_NOTIFIC",
-            "meses": "DT_NOTIFIC",
-            "semana": "DT_NOTIFIC",
-            "semanas": "DT_NOTIFIC",
-            "sintoma": "DT_SIN_PRI",
-            "sintomas": "DT_SIN_PRI",
-            "municipio": "CO_MUN_NOT",
-            "município": "CO_MUN_NOT",
-        },
-        "atencao-basica": {
-            "estado": "UF",
-            "uf": "UF",
-            "municipio": "IBGE",
-            "município": "IBGE",
-            "cidade": "IBGE",
-            "bairro": "BAIRRO",
-            "nome": "NOME",
-            "ubs": "NOME",
-            "cnes": "CNES",
-            "latitude": "LATITUDE",
-            "longitude": "LONGITUDE",
-        },
-    }
-    
-    current_mappings = column_mappings.get(dataset, {})
-    groupby_columns = {
-        "covid-19-vacinacao": "paciente_endereco_uf",
-        "dengue-2024": "estado_uf",
-        "influenza-2025": "estado_uf",
-        "leitos": "UF",
-        "surtos-srag": "SG_UF_NOT",
-        "atencao-basica": "UF",
-    }
-    groupby_col = groupby_columns.get(dataset, "estado")
-
-    state_columns = {
-        "covid-19-vacinacao": "paciente_endereco_uf",
-        "leitos": "UF",
-        "surtos-srag": "SG_UF_NOT",
-        "atencao-basica": "UF",
-    }
-    state_col = state_columns.get(dataset, "estado")
-
-    state_code_aliases = {
-        "atencao-basica": {
-            "AC": "12",
-            "AL": "27",
-            "AP": "16",
-            "AM": "13",
-            "BA": "29",
-            "CE": "23",
-            "DF": "53",
-            "ES": "32",
-            "GO": "52",
-            "MA": "21",
-            "MT": "51",
-            "MS": "50",
-            "MG": "31",
-            "PA": "15",
-            "PB": "25",
-            "PR": "41",
-            "PE": "26",
-            "PI": "22",
-            "RJ": "33",
-            "RN": "24",
-            "RS": "43",
-            "RO": "11",
-            "RR": "14",
-            "SC": "42",
-            "SP": "35",
-            "SE": "28",
-            "TO": "17",
-        }
-    }
-
-    # Padrões analíticos prioritários.
-    # Devem preceder MAX/MIN genéricos, pois códigos territoriais são dimensões.
-    state_grouping = any(term in q for term in ("por estado", "por uf", "cada estado", "estados"))
-    municipality_grouping = any(
-        term in q for term in ("município", "municipio", "municípios", "municipios", "cidade", "cidades")
-    )
-    ranking_request = any(term in q for term in ("maior", "maiores", "mais", "ranking", "top"))
-
-    ratio_request = any(
-        term in q
-        for term in ("proporção", "proporcao", "percentual", "porcentagem", "em relação")
-    ) or "taxa" in q
-
-    if dataset == "leitos" and ratio_request and "leitos sus" in q:
-        if any(term in q for term in ("região", "regiao")):
-            dimension = "REGIAO"
-            alias = "regiao"
-        elif state_grouping:
-            dimension = "UF"
-            alias = "uf"
-        else:
-            dimension = "REGIAO"
-            alias = "regiao"
-        return (
-            f"SELECT {dimension} AS {alias}, "
-            "SUM(LEITOS_SUS) AS leitos_sus, "
-            "SUM(LEITOS_EXISTENTES) AS leitos_totais, "
-            "ROUND(100.0 * SUM(LEITOS_SUS) / nullIf(SUM(LEITOS_EXISTENTES), 0), 2) AS percentual_sus "
-            "FROM leitos WHERE "
-            f"{dimension} != '' AND COMP = (SELECT MAX(COMP) FROM leitos) "
-            f"GROUP BY {dimension} ORDER BY percentual_sus DESC LIMIT 100"
-        )
-
-    if dataset == "leitos" and ratio_request and "uti" in q:
-        return (
-            "SELECT "
-            "SUM(UTI_TOTAL_EXIST) AS leitos_uti, "
-            "SUM(LEITOS_EXISTENTES) AS leitos_totais, "
-            "ROUND(100.0 * SUM(UTI_TOTAL_EXIST) / nullIf(SUM(LEITOS_EXISTENTES), 0), 2) AS percentual_uti "
-            "FROM leitos WHERE COMP = (SELECT MAX(COMP) FROM leitos)"
-        )
-
-    if dataset == "leitos" and "distribuição" in q and "especialidades" in q and "uti" in q:
-        return (
-            "SELECT "
-            "SUM(UTI_ADULTO_EXIST) AS uti_adulto, "
-            "SUM(UTI_PEDIATRICO_EXIST) AS uti_pediatrica, "
-            "SUM(UTI_NEONATAL_EXIST) AS uti_neonatal, "
-            "SUM(UTI_CORONARIANA_EXIST) AS uti_coronariana, "
-            "SUM(UTI_QUEIMADO_EXIST) AS uti_queimados "
-            "FROM leitos WHERE COMP = (SELECT MAX(COMP) FROM leitos)"
-        )
-
-    if dataset == "leitos" and any(term in q for term in ("tipo de unidade", "tipo da unidade")) and any(term in q for term in ("maior", "maiores", "volume")):
-        return (
-            "SELECT DS_TIPO_UNIDADE AS tipo_unidade, SUM(LEITOS_EXISTENTES) AS total_leitos "
-            "FROM leitos WHERE DS_TIPO_UNIDADE != '' "
-            "AND COMP = (SELECT MAX(COMP) FROM leitos) "
-            "GROUP BY DS_TIPO_UNIDADE ORDER BY total_leitos DESC LIMIT 100"
-        )
-
-    if dataset == "leitos" and "uti neonatal" in q and "estado" in q and any(term in q for term in ("menor", "menores", "mínima", "minima")):
-        return (
-            "SELECT UF AS uf, SUM(UTI_NEONATAL_EXIST) AS total_uti_neonatal "
-            "FROM leitos WHERE UF != '' "
-            "AND COMP = (SELECT MAX(COMP) FROM leitos) "
-            "GROUP BY UF ORDER BY total_uti_neonatal ASC LIMIT 100"
-        )
-
-    if dataset == "surtos-srag" and ratio_request and "hospitaliza" in q:
-        return (
-            "SELECT "
-            "COUNT(*) AS total_casos, "
-            "countIf(hospital = 1) AS casos_hospitalizados, "
-            "ROUND(100.0 * countIf(hospital = 1) / nullIf(COUNT(*), 0), 2) AS taxa_hospitalizacao "
-            "FROM srag"
-        )
-
-    if dataset == "surtos-srag" and ratio_request and "uti" in q:
-        return (
-            "SELECT "
-            "COUNT(*) AS total_casos, "
-            "countIf(uti = 1) AS casos_uti, "
-            "ROUND(100.0 * countIf(uti = 1) / nullIf(COUNT(*), 0), 2) AS taxa_uti "
-            "FROM srag"
-        )
-
-    if dataset == "surtos-srag" and "distribuição" in q and "sintoma" in q:
-        return (
-            "SELECT "
-            "['Febre', 'Tosse', 'Dispneia', 'Dor de garganta'] AS sintomas, "
-            "[countIf(febre = 1), countIf(tosse = 1), countIf(dispneia = 1), countIf(garganta = 1)] AS totais "
-            "FROM srag"
-        )
-
-    if dataset == "surtos-srag" and ratio_request and any(term in q for term in ("comorbidade", "comorbidades")):
-        return (
-            "SELECT "
-            "COUNT(*) AS total_casos, "
-            "countIf(cardiopati = 1 OR diabetes = 1 OR asma = 1 OR pneumopati = 1 OR obesidade = 1 OR renal = 1 OR imunodepre = 1) AS casos_com_comorbidades, "
-            "ROUND(100.0 * countIf(cardiopati = 1 OR diabetes = 1 OR asma = 1 OR pneumopati = 1 OR obesidade = 1 OR renal = 1 OR imunodepre = 1) / nullIf(COUNT(*), 0), 2) AS percentual_com_comorbidades "
-            "FROM srag"
-        )
-
-    if dataset == "surtos-srag" and any(term in q for term in ("agente etiológico", "agente etiologico", "sars", "influenza", "vsr")):
-        return (
-            "SELECT "
-            "['SARS-CoV-2', 'Influenza', 'VSR'] AS agentes, "
-            "[countIf(pcr_sars2 = 1), countIf(pos_pcrflu = 1), countIf(pcr_vsr = 1)] AS totais "
-            "FROM srag"
-        )
-
-    if dataset == "covid-19-vacinacao" and state_grouping and ranking_request:
-        valid_ufs = (
-            "'AC','AL','AP','AM','BA','CE','DF','ES','GO','MA','MT','MS','MG',"
-            "'PA','PB','PR','PE','PI','RJ','RN','RS','RO','RR','SC','SP','SE','TO'"
-        )
-        return (
-            "SELECT paciente_endereco_uf AS uf, COUNT(*) AS total_doses "
-            "FROM vacinacao "
-            f"WHERE paciente_endereco_uf IN ({valid_ufs}) "
-            "GROUP BY paciente_endereco_uf ORDER BY total_doses DESC LIMIT 10"
-        )
-
-    if dataset == "leitos" and "uti" in q and state_grouping:
-        return (
-            "SELECT UF AS uf, SUM(UTI_TOTAL_EXIST) AS total_uti_beds "
-            "FROM leitos WHERE UF != '' "
-            "AND COMP = (SELECT MAX(COMP) FROM leitos) "
-            "GROUP BY UF ORDER BY total_uti_beds DESC LIMIT 100"
-        )
-
-    if dataset == "leitos" and q.startswith("quais") and "uti" in q and municipality_grouping:
-        presence_terms = ("têm", "tem", "possuem", "possui", "com uti")
-        if any(term in q for term in presence_terms):
-            uti_column = "UTI_TOTAL_EXIST"
-            for keyword, column in (
-                ("neonatal", "UTI_NEONATAL_EXIST"),
-                ("pediátrica", "UTI_PEDIATRICO_EXIST"),
-                ("pediatrica", "UTI_PEDIATRICO_EXIST"),
-                ("adulto", "UTI_ADULTO_EXIST"),
-                ("coronariana", "UTI_CORONARIANA_EXIST"),
-                ("queimado", "UTI_QUEIMADO_EXIST"),
-            ):
-                if keyword in q:
-                    uti_column = column
-                    break
-            return (
-                "SELECT DISTINCT MUNICIPIO, UF FROM leitos "
-                f"WHERE {uti_column} > 0 "
-                "AND COMP = (SELECT MAX(COMP) FROM leitos) "
-                "ORDER BY MUNICIPIO LIMIT 5000"
-            )
-
-    if dataset == "surtos-srag" and state_grouping:
-        return (
-            "SELECT SG_UF_NOT AS uf, COUNT(*) AS total_srag FROM srag "
-            "WHERE SG_UF_NOT != '' GROUP BY SG_UF_NOT "
-            "ORDER BY total_srag DESC LIMIT 100"
-        )
-
-    if dataset == "atencao-basica" and municipality_grouping and ranking_request:
-        return (
-            "SELECT IBGE AS ibge, COUNT(DISTINCT CNES) AS total_ubs "
-            "FROM atencao_basica WHERE IBGE > 0 GROUP BY IBGE "
-            "ORDER BY total_ubs DESC LIMIT 10"
-        )
-    
-    # Direção do ranking.
-    is_asking_for_min = any(word in q for word in ["menor", "mínimo", "minima", "lowest", "least"])
-    is_asking_for_max = any(word in q for word in ["maior", "máximo", "maxima", "highest", "most"])
-    
-    # Define o ORDER BY apropriado.
-    order_by_clause = "ORDER BY total" if is_asking_for_min else "ORDER BY total DESC"
-    
-    # Agrupamento por dimensão.
-    patterns_groupby = [
-        ("de cada", True),
-        ("por cada", True),
-        ("de cada", True),
-        ("por ", True),
-        ("cada ", True),
-    ]
-    
-    for pattern, is_groupby in patterns_groupby:
-        if pattern in q:
-            # Extrai a dimensão após expressões como "de cada" ou "por".
-            regex_patterns = [
-                r'de cada (\w+)',
-                r'por (\w+)',
-                r'cada (\w+)',
-                r'por cada (\w+)',
-            ]
-            
-            for regex in regex_patterns:
-                match = re.search(regex, q)
-                if match:
-                    word = match.group(1).lower()
-                    # Mapeia termo conhecido para coluna.
-                    if word in current_mappings:
-                        col_name = current_mappings[word]
-                        logger.debug(f"Padrão 'de cada/por {word}' detectado → GROUP BY {col_name}")
-                        sql = f"SELECT {col_name}, COUNT(*) as total FROM {table_name} GROUP BY {col_name} {order_by_clause} LIMIT 100"
-                        return sql
-                    # Tenta correspondência parcial.
-                    for key in current_mappings.keys():
-                        if key.startswith(word) or word.startswith(key):
-                            col_name = current_mappings[key]
-                            logger.debug(f"Padrão 'de cada/por {word}' (partial match {key}) → GROUP BY {col_name}")
-                            sql = f"SELECT {col_name}, COUNT(*) as total FROM {table_name} GROUP BY {col_name} {order_by_clause} LIMIT 100"
-                            return sql
-    
-    # Agrupamento temporal.
-    if any(word in q for word in ["ano", "anos", "mês", "meses", "mês", "mes", "semana", "semanas", "trimestre", "trimestres"]):
-        # Define a função temporal.
-        period_functions = {
-            "ano": ("year", "ano"),
-            "anos": ("year", "ano"),
-            "mês": ("month", "mes"),
-            "mes": ("month", "mes"),
-            "month": ("month", "mes"),
-            "semana": ("week", "semana"),
-            "semanas": ("week", "semana"),
-            "trimestre": ("quarter", "trimestre"),
-            "trimestres": ("quarter", "trimestre"),
-        }
-        
-        # Seleciona o período solicitado.
-        for period_word, (func_name, alias) in period_functions.items():
-            if period_word in q:
-                # Seleciona a coluna temporal do dataset.
-                date_columns = {
-                    "covid-19-vacinacao": "vacina_dataAplicacao",
-                    "leitos": "COMP",
-                    "surtos-srag": "DT_NOTIFIC",
-                }
-                date_col = date_columns.get(dataset)
-
-                if not date_col:
-                    continue
-                
-                logger.debug(f"Padrão detectado: Período '{period_word}' de {date_col} → {func_name}()")
-                sql = f"SELECT {func_name}({date_col}) as {alias}, COUNT(*) as total FROM {table_name} GROUP BY {alias} {order_by_clause} LIMIT 100"
-                return sql
-    
-    # Estatísticas de coluna.
-    stats_patterns = {
-        "média": ("AVG", ["média", "media", "average", "médio"]),
-        "mínima": ("MIN", ["mínima", "minima", "mínimo", "minimo", "menor"]),
-        "máxima": ("MAX", ["máxima", "maxima", "máximo", "maximo", "maior"]),
-        "mediana": ("MEDIAN", ["mediana", "median"]),
-        "desvio": ("STDDEV", ["desvio", "desvio padrão", "desvpack", "variância"]),
-    }
-    
-    for stat_type, (sql_func, keywords) in stats_patterns.items():
-        if any(kw in q for kw in keywords):
-            # Procura a coluna mencionada na pergunta.
-            for key in current_mappings.keys():
-                if key in q:
-                    col_name = current_mappings[key]
-                    logger.debug(f"Padrão detectado: '{stat_type}' de {key} → {sql_func}({col_name})")
-                    sql = f"SELECT {sql_func}({col_name}) as resultado FROM {table_name}"
-                    return sql
-            # Usa uma coluna padrão quando aplicável.
-            default_stat_columns = {
-                "covid-19-vacinacao": "paciente_idade",
-                "surtos-srag": "NU_IDADE_N",
-            }
-            default_stat_col = default_stat_columns.get(dataset)
-            if default_stat_col:
-                logger.debug(f"Padrão detectado: '{stat_type}' com default {default_stat_col}")
-                sql = f"SELECT {sql_func}({default_stat_col}) as resultado FROM {table_name}"
-                return sql
-    
-    # Listagem com filtro.
-    if q.startswith("quais") and any(word in q for word in ["têm ", "tem ", "têm", "tem"]):
-        logger.debug("Padrão detectado: 'Quais ... têm' → SELECT com WHERE")
-        
-        # Detecta negação.
-        has_negation = any(word in q for word in ["não ", "nao ", "sem ", "nenhum"])
-        
-        # Para leitos, filtra pela UTI mencionada.
-        if dataset == "leitos":
-            uti_keywords = {
-                "neonatal": "UTI_NEONATAL_EXIST",
-                "adulto": "UTI_ADULTO_EXIST",
-                "pediátrica": "UTI_PEDIATRICO_EXIST",
-                "pediatrica": "UTI_PEDIATRICO_EXIST",
-                "queimado": "UTI_QUEIMADO_EXIST",
-                "queimados": "UTI_QUEIMADO_EXIST",
-                "coronariana": "UTI_CORONARIANA_EXIST",
-                "uti": "UTI_TOTAL_EXIST",
-            }
-            
-            for uti_type, uti_col in uti_keywords.items():
-                if uti_type in q:
-                    # Define a condição conforme a negação.
-                    condition = "= 0" if has_negation else "> 0"
-                    
-                    # Define a dimensão de retorno.
-                    if any(word in q for word in ["cidade", "cidades", "municipio", "municípios"]):
-                        select_col = "DISTINCT MUNICIPIO, UF"
-                        order_col = "MUNICIPIO"
-                    elif any(word in q for word in ["estado", "estados", "uf"]):
-                        select_col = "DISTINCT UF"
-                        order_col = "UF"
-                    else:
-                        select_col = "DISTINCT MUNICIPIO, UF"
-                        order_col = "MUNICIPIO"
-                    
-                    sql = (
-                        f"SELECT {select_col} FROM {table_name} "
-                        f"WHERE {uti_col} {condition} "
-                        f"AND COMP = (SELECT MAX(COMP) FROM {table_name}) "
-                        f"ORDER BY {order_col} LIMIT 5000"
-                    )
-                    logger.debug(f"Padrão 'Quais ... {'não ' if has_negation else ''}têm {uti_type}' → {sql[:60]}")
-                    return sql
-    
-    # Ranking por grupo.
-    if any(word in q for word in ["qual", "que"]) and any(word in q for word in ["mais", "maior", "maiores"]):
-        # Pergunta de comparação.
-        logger.debug("Padrão detectado: 'Qual ... teve MAIS' → GROUP BY")
-        sql = f"SELECT {groupby_col}, COUNT(*) as total FROM {table_name} GROUP BY {groupby_col} {order_by_clause} LIMIT 100"
-    
-    # Contagem com filtro territorial.
-    elif any(word in q for word in ["quantas", "quantos", "quanto"]) and any(word in q for word in ["em ", "em sp", "em rj", "no ", "na "]):
-        # Pergunta com filtro por UF.
-        logger.debug("Padrão detectado: 'Quantas em [estado]' → WHERE")
-        
-        # Extrai o código da UF.
-        regex_patterns = [
-            r'em\s+([a-z]{2})',      # "em SP", "em RJ"
-            r'no\s+([a-z]{2})',      # "no SP", "no RJ"
-            r'na\s+([a-z]{2})',      # "na SP", "na RJ"
-            r'estado\s+[a-z]*\s+([a-z]{2})',  # "estado de SP", "estado SP"
-        ]
-        
-        estado_code = None
-        for regex in regex_patterns:
-            match = re.search(regex, q, re.IGNORECASE)
-            if match:
-                estado_code = match.group(1).upper()
-                break
-        
-        # Aplica filtro por UF quando encontrado.
-        valid_state_codes = {
-            "AC", "AL", "AP", "AM", "BA", "CE", "DF", "ES", "GO", "MA", "MT", "MS",
-            "MG", "PA", "PB", "PR", "PE", "PI", "RJ", "RN", "RS", "RO", "RR", "SC",
-            "SP", "SE", "TO",
-        }
-        if estado_code not in valid_state_codes:
-            estado_code = None
-
-        if estado_code:
-            mapped_state_code = state_code_aliases.get(dataset, {}).get(estado_code, estado_code)
-            sql = f"SELECT COUNT(*) AS total_registros FROM {table_name} WHERE {state_col} = '{mapped_state_code}'"
-            logger.debug(f"Estado '{estado_code}' extraído → WHERE {state_col} = '{mapped_state_code}'")
-        else:
-            sql = f"SELECT COUNT(*) AS total_registros FROM {table_name}"
-            logger.debug("Nenhum estado extraído, usando COUNT simples")
-    
-    # Contagem total.
-    elif any(word in q for word in ["quantas", "quantos", "quanto", "total", "geral", "contar", "casos"]):
-        logger.debug("Padrão detectado: 'Quantas total' → COUNT(*)")
-        sql = f"SELECT COUNT(*) AS total_registros FROM {table_name}"
-    
-    # Agrupamento territorial.
-    elif any(word in q for word in ["por estado", "por uf", "cada estado", "por região", "região"]):
-        logger.debug("Padrão detectado: 'Por estado' → GROUP BY")
-        sql = f"SELECT {groupby_col}, COUNT(*) as total FROM {table_name} GROUP BY {groupby_col} {order_by_clause} LIMIT 100"
-    
-    # Fallback simples.
-    else:
-        logger.debug("Nenhum padrão detectado, usando COUNT simples")
-        sql = f"SELECT COUNT(*) AS total_registros FROM {table_name}"
-    
-    logger.info(f"Fallback SQL para {dataset}: {sql}")
-    return sql

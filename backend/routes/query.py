@@ -6,7 +6,7 @@ import time
 from typing import Optional, List, Dict, Tuple, Any
 
 from services.sql_service import fallback_sql, generate_sql, validate_sql_syntax
-from db.clickhouse import run_query
+from db.clickhouse import run_query, validate_query
 from services.interpretation_service import interpret_result
 from services.multibase_service import multibase_service
 from services.relationship_service import relationship_service
@@ -52,6 +52,8 @@ def _build_evaluation_metrics(response: Dict[str, Any]) -> Dict[str, Any]:
         failure_stage = "answerability"
     elif success:
         failure_stage = None
+    elif not sql and response.get("sql_generation_mode") in {"llm_error", "empty_response", "deterministic_fallback"}:
+        failure_stage = "sql_generation"
     elif not sql_valid:
         failure_stage = "sql_validation"
     elif execution_error:
@@ -73,7 +75,8 @@ def _build_evaluation_metrics(response: Dict[str, Any]) -> Dict[str, Any]:
             "dataset_count": len(datasets),
             "relationship_count": len(relationships),
             "cross_dataset": bool(response.get("cross_dataset")),
-            "llm_sql_attempted": bool(response.get("llm_sql_attempted")),
+            "llm_sql_attempted": bool(response.get("llm_sql_attempted",
+                response.get("sql_generation_mode") in {"llm", "llm_error", "empty_response"})),
             "response_has_insight": bool((response.get("insight") or "").strip()),
             "response_has_factual_summary": bool((response.get("factual_summary") or "").strip()),
             "warning_count": len(response.get("warnings") or []),
@@ -137,7 +140,7 @@ def _error_response(
         "relationships": relationships or [],
         "routing_mode": routing_mode,
         "sql_generation_mode": sql_generation_mode,
-        "llm_sql_attempted": sql_generation_mode in {"llm", "deterministic_fallback"},
+        "llm_sql_attempted": sql_generation_mode in {"llm", "llm_error", "empty_response", "deterministic_fallback"},
         "validation": validation or {"valid": False, "tables": [], "joins": [], "errors": []},
         "sql": sql,
         "columns": [],
@@ -148,7 +151,7 @@ def _error_response(
         "insight": insight,
         "factual_summary": "",
         "interpretation_mode": "none",
-        "answerability": answerability or {"answerable": False, "reason": message},
+        "answerability": answerability or {},
         "success": False,
     })
 
@@ -197,99 +200,6 @@ def _detect_candidate_datasets(question: str) -> List[str]:
     )
 
 
-def _build_interoperability_fallback_sql(question: str, detected_datasets: List[str]) -> Optional[Tuple[str, List[str]]]:
-    """Monta um SQL determinístico de fallback para interoperabilidade conhecida."""
-
-    q = question.lower()
-    datasets_set = set(detected_datasets)
-
-    if {"surtos-srag", "atencao-basica"}.issubset(datasets_set):
-        if any(word in q for word in ["município", "municipio", "cidade", "ibge"]):
-            sql = """
-            WITH
-            srag_by_municipality AS (
-                SELECT
-                    co_mun_not AS ibge,
-                    COUNT(*) AS total_srag
-                FROM srag
-                GROUP BY co_mun_not
-            ),
-            ubs_by_municipality AS (
-                SELECT
-                    ibge,
-                    COUNT(DISTINCT cnes) AS total_ubs
-                FROM atencao_basica
-                GROUP BY ibge
-            )
-            SELECT
-                s.ibge,
-                s.total_srag,
-                u.total_ubs
-            FROM srag_by_municipality AS s
-            INNER JOIN ubs_by_municipality AS u ON s.ibge = u.ibge
-            ORDER BY total_srag DESC
-            LIMIT 100
-            """.strip()
-            return sql, ["surtos-srag", "atencao-basica"]
-
-        if any(word in q for word in ["estado", "uf", "região", "regiao"]):
-            sql = """
-            WITH
-            srag_by_uf AS (
-                SELECT
-                    sg_uf_not AS uf,
-                    COUNT(*) AS total_srag
-                FROM srag
-                GROUP BY sg_uf_not
-            ),
-            ubs_by_uf AS (
-                SELECT
-                    uf,
-                    COUNT(DISTINCT cnes) AS total_ubs,
-                    COUNT(DISTINCT ibge) AS municipios_com_ubs
-                FROM atencao_basica
-                GROUP BY uf
-            )
-            SELECT
-                s.uf,
-                s.total_srag,
-                u.municipios_com_ubs,
-                u.total_ubs
-            FROM srag_by_uf AS s
-            INNER JOIN ubs_by_uf AS u ON s.uf = u.uf
-            ORDER BY total_srag DESC
-            LIMIT 100
-            """.strip()
-            return sql, ["surtos-srag", "atencao-basica"]
-
-        sql = """
-        WITH
-        srag_by_municipality AS (
-            SELECT
-                co_mun_not AS ibge,
-                COUNT(*) AS total_srag
-            FROM srag
-            GROUP BY co_mun_not
-        ),
-        ubs_by_municipality AS (
-            SELECT
-                ibge,
-                COUNT(DISTINCT cnes) AS total_ubs
-            FROM atencao_basica
-            GROUP BY ibge
-        )
-        SELECT
-            s.ibge,
-            s.total_srag,
-            u.total_ubs
-        FROM srag_by_municipality AS s
-        INNER JOIN ubs_by_municipality AS u ON s.ibge = u.ibge
-        """.strip()
-        return sql, ["surtos-srag", "atencao-basica"]
-
-    return None
-
-
 def sanitize_sql(sql: str) -> str:
     """Sanitização inteligente que preserva SQL válido"""
     
@@ -316,15 +226,6 @@ def sanitize_sql(sql: str) -> str:
     # Corrigir CURRENT_DATE para today()
     sql = re.sub(r"\bCURRENT_DATE\b", "today()", sql, flags=re.IGNORECASE)
     
-    # Garantir que LIMIT existe se não houver GROUP BY (segurança)
-    has_scalar_aggregate = bool(
-        re.search(r"\b(?:COUNT|SUM|AVG|MIN|MAX|MEDIAN|STDDEV)\s*\(", sql, re.IGNORECASE)
-    ) and "GROUP BY" not in sql.upper()
-    if "GROUP BY" not in sql.upper() and "LIMIT" not in sql.upper() and not has_scalar_aggregate:
-        if not re.search(r"LIMIT\s+\d+", sql, re.IGNORECASE):
-            sql = sql.rstrip() + " LIMIT 10000"
-    
-    logger.debug(f"SQL depois de sanitizar: {sql}")
     return sql
 
 
@@ -394,6 +295,38 @@ def is_valid_sql(sql: str, dataset: str = "covid-19-vacinacao") -> bool:
 
 @router.post("/ask")
 def ask(req: AskRequest):
+    """Execute a question and finalize timing for every response, including failures."""
+    timings = {"total_start": time.perf_counter(), "stages": {}}
+    response = _ask(req, timings)
+    total = time.perf_counter() - timings["total_start"]
+    stages = timings["stages"]
+    names = ("dataset_selection", "relationship_lookup", "context_construction",
+             "sql_generation", "sanitization", "validation", "database_execution", "interpretation")
+    values = {name: stages.get(name, 0.0) for name in names}
+    # Include setup and interrupted stages in total time.
+    values["other_processing"] = max(0.0, total - sum(values.values()))
+    response["timing_s"] = {name: round(value, 2) for name, value in values.items()}
+    response["timing_s"].update(
+        interpretation_llm=round(values["interpretation"], 2),  # legacy stage alias
+        sql_generation_llm=round(values["sql_generation"], 2)
+            if response.get("sql_generation_mode") in {"llm", "llm_error", "deterministic_fallback"} else 0.0,
+        total=round(total, 2),
+    )
+    _append_evaluation_metrics(response)
+    print("\n" + "=" * 70)
+    print(f"TIMING REPORT - {req.model.upper()}")
+    print(f"Dataset: {response.get('dataset', 'unknown')} | success={response.get('success')}")
+    for name, value in values.items():
+        label = name
+        if name == "interpretation":
+            label += f" ({response.get('interpretation_mode', 'none')})"
+        print(f"  {label:<52} {value:>8.2f} s")
+    print(f"  {'TOTAL':<52} {total:>8.2f} s")
+    print("=" * 70)
+    return response
+
+
+def _ask(req: AskRequest, timings):
     """
     Processa pergunta em linguagem natural e retorna resultado.
     
@@ -426,11 +359,7 @@ def ask(req: AskRequest):
     """
     
     # Métricas de tempo.
-    time_start = time.time()
-    timings = {
-        "total_start": time_start,
-        "stages": {}
-    }
+    time_start = timings["total_start"]
     
     logger.info(f"Pergunta recebida: {req.question}")
     logger.info(f"Modelo: {req.model}")
@@ -448,13 +377,13 @@ def ask(req: AskRequest):
         validation_payload: Dict[str, object] = {"valid": False, "tables": [], "joins": []}
 
         if not req.dataset:
-            stage_start = time.time()
+            stage_start = time.perf_counter()
             selection = multibase_service.select_datasets(
                 req.question,
                 req.model,
                 list(DATASETS_CONFIG.keys()),
             )
-            timings["stages"]["dataset_selection"] = time.time() - stage_start
+            timings["stages"]["dataset_selection"] = time.perf_counter() - stage_start
 
             selected_datasets = selection.datasets or (detected_datasets[:1] if detected_datasets else [dataset_to_use])
             cross_dataset = len(selected_datasets) > 1
@@ -479,11 +408,11 @@ def ask(req: AskRequest):
                 )
 
             if cross_dataset:
-                stage_start = time.time()
+                stage_start = time.perf_counter()
                 relationships = relationship_service.find_relationships(selected_datasets)
-                timings["stages"]["relationship_lookup"] = time.time() - stage_start
+                timings["stages"]["relationship_lookup"] = time.perf_counter() - stage_start
 
-                if not relationships:
+                if not multibase_service.relationships_cover(selected_datasets, relationships):
                     limitation = "Não há relacionamento semântico validado para montar essa consulta entre as bases selecionadas."
                     return _append_evaluation_metrics({
                         "question": req.question,
@@ -527,18 +456,19 @@ def ask(req: AskRequest):
                     for note in relationship.result_notes
                 )
 
-                stage_start = time.time()
+                stage_start = time.perf_counter()
                 multibase_context = multibase_service.build_multibase_context(selected_datasets, relationships)
-                timings["stages"]["context_construction"] = time.time() - stage_start
+                timings["stages"]["context_construction"] = time.perf_counter() - stage_start
 
-                stage_start = time.time()
+                stage_start = time.perf_counter()
                 raw_sql, sql_generation_mode = multibase_service.generate_sql(
                     req.question,
                     req.model,
                     selected_datasets,
                     relationships,
+                    sql_validator=validate_query,
                 )
-                timings["stages"]["sql_generation"] = time.time() - stage_start
+                timings["stages"]["sql_generation"] = time.perf_counter() - stage_start
 
                 if not raw_sql:
                     raw_sql = multibase_service.build_deterministic_fallback_sql(
@@ -566,14 +496,14 @@ def ask(req: AskRequest):
                             "success": False,
                         })
 
-                stage_start = time.time()
+                stage_start = time.perf_counter()
                 sql = sanitize_sql(raw_sql)
                 try:
                     sql = multibase_service.canonicalize_sql_identifiers(sql, selected_datasets)
                 except Exception as exc:
                     logger.warning("Não foi possível canonicalizar a SQL multibase: %s", exc)
                 validation_result = multibase_service.validate_sql(sql, selected_datasets, relationships)
-                timings["stages"]["validation"] = time.time() - stage_start
+                timings["stages"]["validation"] = time.perf_counter() - stage_start
 
                 if not validation_result.valid:
                     multibase_fallback_sql = multibase_service.build_deterministic_fallback_sql(
@@ -616,10 +546,10 @@ def ask(req: AskRequest):
                     "errors": validation_result.errors,
                 }
 
-                stage_start = time.time()
+                stage_start = time.perf_counter()
                 logger.info("Executando consulta multibase no ClickHouse...")
                 result = run_query(sql)
-                timings["stages"]["database_execution"] = time.time() - stage_start
+                timings["stages"]["database_execution"] = time.perf_counter() - stage_start
 
                 if isinstance(result, dict) and "error" in result:
                     return _append_evaluation_metrics({
@@ -640,7 +570,7 @@ def ask(req: AskRequest):
                         "success": False,
                     })
 
-                stage_start = time.time()
+                stage_start = time.perf_counter()
                 factual_summary = build_factual_summary(sql, result, req.question)
                 if (
                     sql_generation_mode == "deterministic_fallback"
@@ -649,22 +579,20 @@ def ask(req: AskRequest):
                     insight = factual_summary
                     interpretation_mode = "deterministic_factual"
                 else:
-                    insight = interpret_result(
+                    insight, interpretation_mode = interpret_result(
                         req.question,
                         result,
                         req.model,
                         dataset=",".join(selected_datasets),
                         factual_summary=factual_summary,
+                        return_mode=True,
                     )
-                    interpretation_mode = "llm_grounded"
-                    if insight.strip() == factual_summary.strip():
-                        interpretation_mode = "deterministic_fallback"
-                    elif is_low_information_interpretation(insight, factual_summary):
+                    if interpretation_mode == "llm_grounded" and insight.strip() != factual_summary.strip() and is_low_information_interpretation(insight, factual_summary):
                         insight = factual_summary
                         interpretation_mode = "deterministic_fallback"
-                timings["stages"]["interpretation"] = time.time() - stage_start
+                timings["stages"]["interpretation"] = time.perf_counter() - stage_start
 
-                time_total = time.time() - time_start
+                time_total = time.perf_counter() - time_start
                 timings["total_ms"] = round(time_total * 1000, 2)
 
                 return _append_evaluation_metrics({
@@ -676,7 +604,7 @@ def ask(req: AskRequest):
                     "analytical_limitations": analytical_limitations,
                     "routing_mode": routing_mode,
                     "sql_generation_mode": sql_generation_mode,
-                    "llm_sql_attempted": sql_generation_mode in {"llm", "deterministic_fallback"},
+                    "llm_sql_attempted": sql_generation_mode in {"llm", "llm_error", "empty_response", "deterministic_fallback"},
                     "validation": validation_payload,
                     "sql": sql,
                     "columns": extract_output_columns(sql),
@@ -694,7 +622,7 @@ def ask(req: AskRequest):
                         "sql_generation": round(timings["stages"].get("sql_generation", 0), 2),
                         "sql_generation_llm": round(
                             timings["stages"].get("sql_generation", 0)
-                            if sql_generation_mode in {"llm", "deterministic_fallback"}
+                            if sql_generation_mode in {"llm", "llm_error", "empty_response", "deterministic_fallback"}
                             else 0,
                             2,
                         ),
@@ -742,7 +670,7 @@ def ask(req: AskRequest):
             )
         
         # Geração de SQL.
-        stage_start = time.time()
+        stage_start = time.perf_counter()
         logger.info("Gerando SQL...")
         raw_sql, sql_generation_mode = generate_sql(
             req.question,
@@ -750,8 +678,9 @@ def ask(req: AskRequest):
             req.model,
             dataset_to_use,
             return_mode=True,
+            sql_validator=validate_query,
         )
-        time_sql_generation = time.time() - stage_start
+        time_sql_generation = time.perf_counter() - stage_start
         timings["stages"]["sql_generation"] = time_sql_generation
         
         if not raw_sql:
@@ -768,19 +697,19 @@ def ask(req: AskRequest):
         logger.debug(f"SQL gerado (raw): {raw_sql}")
         
         # Sanitização.
-        stage_start = time.time()
+        stage_start = time.perf_counter()
         logger.info("Sanitizando SQL...")
         sql = sanitize_sql(raw_sql)
         try:
             sql = multibase_service.canonicalize_sql_identifiers(sql, [dataset_to_use])
         except Exception as exc:
             logger.warning("Não foi possível canonicalizar os identificadores SQL: %s", exc)
-        time_sanitization = time.time() - stage_start
+        time_sanitization = time.perf_counter() - stage_start
         timings["stages"]["sanitization"] = time_sanitization
         logger.debug(f"SQL sanitizado: {sql}")
         
         # Validação.
-        stage_start = time.time()
+        stage_start = time.perf_counter()
         logger.info("Validando SQL...")
         single_validation = multibase_service.validate_sql(sql, [dataset_to_use], [])
         semantic_valid = validate_sql_syntax(sql, dataset_to_use, req.question)
@@ -834,14 +763,14 @@ def ask(req: AskRequest):
                 validation=validation_payload,
                 sql=raw_sql,
             )
-        time_validation = time.time() - stage_start
+        time_validation = time.perf_counter() - stage_start
         timings["stages"]["validation"] = time_validation
         
         # Execução no ClickHouse.
-        stage_start = time.time()
+        stage_start = time.perf_counter()
         logger.info("Executando query no ClickHouse...")
         result = run_query(sql)
-        time_database = time.time() - stage_start
+        time_database = time.perf_counter() - stage_start
         timings["stages"]["database_execution"] = time_database
         
         # Tratamento de erro de execução.
@@ -861,48 +790,30 @@ def ask(req: AskRequest):
         logger.info(f"Query executada com sucesso. Resultado: {len(result)} linhas")
         
         # Interpretação do resultado.
-        stage_start = time.time()
+        stage_start = time.perf_counter()
         logger.info("Interpretando resultado...")
         factual_summary = build_factual_summary(sql, result, req.question)
         if should_use_deterministic_interpretation(req.question, factual_summary):
             insight = factual_summary
             interpretation_mode = "deterministic_factual"
         else:
-            insight = interpret_result(
+            insight, interpretation_mode = interpret_result(
                 req.question,
                 result,
                 req.model,
                 dataset=dataset_to_use,
                 factual_summary=factual_summary,
+                return_mode=True,
             )
-            interpretation_mode = "llm_grounded"
-            if insight.strip() == factual_summary.strip():
-                interpretation_mode = "deterministic_fallback"
-            elif is_low_information_interpretation(insight, factual_summary):
+            if interpretation_mode == "llm_grounded" and insight.strip() != factual_summary.strip() and is_low_information_interpretation(insight, factual_summary):
                 insight = factual_summary
                 interpretation_mode = "deterministic_fallback"
-        time_interpretation = time.time() - stage_start
+        time_interpretation = time.perf_counter() - stage_start
         timings["stages"]["interpretation"] = time_interpretation
         
         # Tempo total.
-        time_total = time.time() - time_start
+        time_total = time.perf_counter() - time_start
         timings["total_ms"] = round(time_total * 1000, 2)
-        
-        # Relatório de tempo no terminal.
-        print("\n" + "="*70)
-        print(f"TIMING REPORT - {req.model.upper()}")
-        print("="*70)
-        print(f"Pergunta: {req.question[:60]}...")
-        print(f"Dataset: {dataset_to_use}")
-        print("-"*70)
-        print(f"  SQL Generation ({sql_generation_mode}): {timings['stages']['sql_generation']:>8.2f} s")
-        print(f"  SQL Sanitization:            {timings['stages']['sanitization']:>8.2f} s")
-        print(f"  SQL Validation:              {timings['stages']['validation']:>8.2f} s")
-        print(f"  Database Execution:          {timings['stages']['database_execution']:>8.2f} s")
-        print(f"  Result Interpretation ({interpretation_mode}): {timings['stages']['interpretation']:>8.2f} s")
-        print("-"*70)
-        print(f"  TOTAL:                       {timings['total_ms']/1000:>8.2f} s")
-        print("="*70 + "\n")
         
         # Log resumido de desempenho.
         logger.info(f"Timing - SQL Gen: {timings['stages']['sql_generation']:.2f}s, "
@@ -923,7 +834,7 @@ def ask(req: AskRequest):
             ] if DATASETS_CONFIG.get(dataset_to_use, {}).get("data_scope_note") else [],
             "routing_mode": routing_mode,
             "sql_generation_mode": sql_generation_mode,
-            "llm_sql_attempted": sql_generation_mode in {"llm", "deterministic_fallback"},
+            "llm_sql_attempted": sql_generation_mode in {"llm", "llm_error", "empty_response", "deterministic_fallback"},
             "validation": validation_payload,
             "sql": sql,
             "columns": extract_output_columns(sql),
@@ -942,7 +853,7 @@ def ask(req: AskRequest):
                 "context_construction": round(timings['stages'].get('context_construction', 0), 2),
                 "sql_generation": round(timings['stages']['sql_generation'], 2),
                 "sql_generation_llm": round(
-                    timings['stages']['sql_generation'] if sql_generation_mode in {"llm", "deterministic_fallback"} else 0,
+                    timings['stages']['sql_generation'] if sql_generation_mode in {"llm", "llm_error", "empty_response", "deterministic_fallback"} else 0,
                     2,
                 ),
                 "sanitization": round(timings['stages']['sanitization'], 2),

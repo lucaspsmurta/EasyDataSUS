@@ -11,6 +11,8 @@ from llm.router import get_llm
 from metadata.loader import load_metadata
 from services.relationship_service import Relationship, relationship_service
 from services.sql_service import extract_sql
+from services.analytical_contract import SQL_INSTRUCTIONS, contract_errors, prepare_sql, normalize
+from services.generation_diagnostics import record
 
 logger = logging.getLogger(__name__)
 
@@ -171,11 +173,11 @@ class MultibaseService:
         detected = []
         keyword_map = {
             "covid-19-vacinacao": [
-                "vacina", "vacinacao", "covid", "dose", "doses", "imunizacao",
+                "vacina", "vacinas", "vacinacao", "covid", "dose", "doses", "imunizacao",
                 "pfizer", "astrazeneca",
             ],
             "leitos": [
-                "leito", "leitos", "uti", "hospital", "hospitais", "capacidade",
+                "leito", "leitos",
                 "cama", "camas",
             ],
             "surtos-srag": [
@@ -185,14 +187,18 @@ class MultibaseService:
             "atencao-basica": [
                 "ubs", "unidade basica", "unidades basicas", "atencao basica",
                 "atencao primaria", "posto de saude", "postos de saude",
-                "saude da familia", "cnes", "bairro", "ibge",
+                "saude da familia",
             ],
         }
 
         for dataset_id in candidate_datasets:
-            if any(keyword in q for keyword in keyword_map.get(dataset_id, [])):
+            if any(re.search(r"(?<!\w)" + re.escape(keyword) + r"(?!\w)", q) for keyword in keyword_map.get(dataset_id, [])):
                 detected.append(dataset_id)
 
+        # Ambiguous field names never add a second domain to an explicit selection.
+        if not detected and re.search(r"\b(?:uti|hospital|hospitais)\b", q):
+            if "leitos" in candidate_datasets:
+                detected.append("leitos")
         return detected
 
     def build_multibase_context(self, datasets: Sequence[str], relationships: Sequence[Relationship]) -> Dict[str, object]:
@@ -216,13 +222,14 @@ class MultibaseService:
         prompt_parts = [
             "Você é um especialista em SQL ClickHouse.",
             "Responda SOMENTE com SQL válido, sem explicações, sem markdown.",
-            "Use somente os datasets e relacionamentos fornecidos.",
+            "FROM/JOIN só podem usar as tabelas físicas listadas abaixo ou CTEs definidas na consulta.",
+            "Identificadores de datasets/relacionamentos NÃO são tabelas.",
             "Se houver relacionamento muitos-para-muitos, faça pré-agregação antes do JOIN.",
             "Não crie joins nem colunas fora do contexto fornecido.",
             "",
             f"Pergunta: {question}",
             "",
-            "Datasets selecionados:",
+            "Tabelas físicas autorizadas:",
         ]
 
         for dataset_id in selected_datasets:
@@ -230,16 +237,28 @@ class MultibaseService:
             metadata = context["metadata"][dataset_id]
             columns = metadata.get("colunas_principais") or metadata.get("columns") or {}
             prompt_parts.append(
-                f"- {dataset_id} -> tabela {get_table_name(dataset_id)} | {config.get('dominio', '')} | {config.get('description', '')}"
+                f"- FROM {get_table_name(dataset_id)} | {config.get('dominio', '')}"
             )
             prompt_parts.append(f"  Colunas permitidas: {', '.join(columns.keys())}")
+            join_fields = {
+                name.lower()
+                for relationship in relationships
+                for dataset, name in ((relationship.source_dataset, relationship.source_column),
+                                      (relationship.target_dataset, relationship.target_column))
+                if dataset == dataset_id
+            }
+            for name, detail in columns.items():
+                if name.lower() in join_fields or re.search(r"\b" + re.escape(name) + r"\b", question, re.IGNORECASE):
+                    description = detail.get("description") or detail.get("descricao") or ""
+                    dtype = detail.get("type") or detail.get("tipo") or ""
+                    prompt_parts.append(f"  Campo de referência: {get_table_name(dataset_id)}.{name} ({dtype}): {description}")
 
         prompt_parts.append("")
         prompt_parts.append("Relacionamentos permitidos:")
         if relationships:
             for relationship in relationships:
                 prompt_parts.append(
-                    f"- {relationship.id}: {relationship.source_table}.{relationship.source_column} = {relationship.target_table}.{relationship.target_column} | "
+                    f"- Chave de junção: {relationship.source_table}.{relationship.source_column} = {relationship.target_table}.{relationship.target_column} | "
                     f"cardinalidade {relationship.cardinality} | pré-agregação {relationship.requires_preaggregation}"
                 )
                 if relationship.analytical_notes:
@@ -257,10 +276,41 @@ class MultibaseService:
         prompt_parts.append("- Use only SELECT or WITH followed by SELECT")
         prompt_parts.append("- Preserve os alias e colunas de junção permitidas")
         prompt_parts.append("- Para muitos-para-muitos, agregue cada lado antes do JOIN")
+        prompt_parts.append("- Entidades comuns/presentes nas duas bases: INNER JOIN. FULL OUTER JOIN inclui entidades presentes em apenas uma base e muda a resposta.")
+        prompt_parts.append("- Calcule cada métrica na sua base de origem: identificador de notificação não substitui CNES. Não use COALESCE para intercambiar métricas de entidades diferentes.")
         prompt_parts.append("- Dialeto: ClickHouse")
         prompt_parts.append("- Retorne apenas SQL")
+        prompt_parts.append(SQL_INSTRUCTIONS)
+        prompt_parts.append(f"Pergunta a responder (preserve os filtros de cada entidade): {question}")
+        filter_hints = self._positive_code_filter_hints(question, selected_datasets, relationships)
+        if filter_hints:
+            prompt_parts.append("Filtros de códigos pedidos (aplique nas respectivas bases antes de agregar): " + "; ".join(filter_hints))
+            prompt_parts.append("Positivo refere-se a esses códigos numéricos, não a exames laboratoriais. Não acrescente condições clínicas que não foram solicitadas.")
 
         return "\n".join(prompt_parts)
+
+    def _positive_code_filter_hints(self, question, selected_datasets, relationships):
+        """Build positive-code hints from numeric schema fields."""
+        q = normalize(question)
+        if re.search(r'\b(?:nao|sem|exceto|exclu\w*)\b[^.;,]{0,50}\bpositivos?\b', q):
+            # Negated requests need broader language understanding.
+            return []
+        municipal = bool(re.search(r'municipios? positivos?|codigos? positivos? de municipio', q))
+        join_fields = {(r.source_table, r.source_column.lower()) for r in relationships}
+        join_fields |= {(r.target_table, r.target_column.lower()) for r in relationships}
+        hints = []
+        for dataset in selected_datasets:
+            table = get_table_name(dataset)
+            for name, detail in self._allowed_columns_for_table(table).items():
+                dtype = str(detail.get('type') or detail.get('tipo') or '').lower()
+                if 'int' not in dtype:
+                    continue
+                explicit = bool(re.search(r'\b' + re.escape(name.lower()) + r'\s+(?:distintos?\s+)?positivos?\b', q))
+                description = normalize(str(detail.get('description') or detail.get('descricao') or ''))
+                municipal_key = municipal and (table, name.lower()) in join_fields and 'municipio' in description
+                if explicit or municipal_key:
+                    hints.append(f'{table}.{name} > 0')
+        return hints
 
     def generate_sql(
         self,
@@ -268,11 +318,12 @@ class MultibaseService:
         model_name: str,
         selected_datasets: Sequence[str],
         relationships: Sequence[Relationship],
+        sql_validator=None,
     ) -> Tuple[Optional[str], str]:
         if len(selected_datasets) <= 1:
             return None, "single_dataset"
 
-        if not relationships:
+        if not self.relationships_cover(selected_datasets, relationships):
             return None, "no_relationship"
 
         if os.getenv("SQL_GENERATION_STRATEGY", "deterministic_first").lower() == "deterministic_first":
@@ -292,18 +343,54 @@ class MultibaseService:
                 prompt,
                 num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")),
                 temperature=0.0,
-                timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "60")),
+                timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")),
                 max_retries=1,
             )
         except Exception as exc:
             logger.warning(f"Falha ao gerar SQL multibase via LLM: {exc}")
+            record('sql_generation_exception', error=str(exc))
             return None, "llm_error"
 
-        sql = extract_sql(response)
-        if not sql:
-            return None, "empty_response"
+        for attempt in range(2):
+            try:
+                sql = prepare_sql(extract_sql(response), question)
+                errors = contract_errors(sql, question, self._allowed_columns_by_dataset(selected_datasets))
+                sql = self.canonicalize_sql_identifiers(sql, selected_datasets)
+                validation = self.validate_sql(sql, selected_datasets, relationships)
+                errors.extend(validation.errors)
+                if not errors and sql_validator is not None:
+                    errors.extend(sql_validator(sql))
+            except Exception:
+                sql, errors = None, ["SQL inválido"]
+            record('sql_validation', attempt=attempt + 1, sql=sql, errors=list(errors))
+            if not errors:
+                return sql, "llm"
+            logger.warning("SQL multibase rejeitada na tentativa %s: %s", attempt + 1, "; ".join(errors))
+            if attempt == 0:
+                try:
+                    response = llm.generate(prompt + "\nCorrija: " + str(sql) + "\n" + "; ".join(errors),
+                        num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")), temperature=0.0,
+                        timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")), max_retries=1)
+                except Exception as exc:
+                    record('sql_generation_exception', error=str(exc))
+                    break
+        return None, "llm_error"
 
-        return sql, "llm"
+    @staticmethod
+    def relationships_cover(datasets, relationships):
+        """Every selected dataset must belong to one connected authorized graph."""
+        selected = set(datasets)
+        if not selected:
+            return False
+        seen = {next(iter(selected))}
+        while True:
+            previous = set(seen)
+            for rel in relationships:
+                edge = {rel.source_dataset, rel.target_dataset}
+                if edge <= selected and edge & seen:
+                    seen |= edge
+            if seen == previous:
+                return seen == selected
 
     def build_deterministic_fallback_sql(
         self,
@@ -311,12 +398,27 @@ class MultibaseService:
         relationships: Sequence[Relationship],
         question: str = "",
     ) -> Optional[str]:
+        if not self.relationships_cover(selected_datasets, relationships):
+            return None
+        q = self._normalize_question_text(question).strip(" ?.")
+        # Full matching is intentional: unrecognized filters must not disappear.
+        count_pattern = r"(?:em )?quantos municipios (?:ha|possuem|tem) (?:casos|registros|notificacoes) de srag e (?:tambem )?(?:ubs|unidades basicas de saude)(?: cadastradas)?"
+        list_pattern = r"(?:quais|liste(?: todos os)?) municipios (?:possuem|com) (?:casos|registros|notificacoes) de srag e (?:ubs|unidades basicas de saude)(?:,? e quais sao os respectivos totais)?"
+        beds_pattern = r"(?:compare|liste) (?:doses(?: aplicadas)?|registros de vacinacao) e leitos(?: de uti)? por estado"
+        municipality_count = bool(re.fullmatch(count_pattern, q))
+        municipality_list = bool(re.fullmatch(list_pattern, q))
+        if set(selected_datasets) == {"surtos-srag", "atencao-basica"} and not (municipality_count or municipality_list):
+            return None
+        if set(selected_datasets) == {"covid-19-vacinacao", "leitos"} and not re.fullmatch(beds_pattern, q):
+            return None
         if set(selected_datasets) == {"covid-19-vacinacao", "leitos"} and relationships:
             relationship = next(
                 (item for item in relationships if item.id == "vacinacao_leitos_uf"),
                 None,
             )
             if relationship and relationship.requires_preaggregation:
+                bed_metric = "UTI_TOTAL_EXIST" if "uti" in q else "LEITOS_EXISTENTES"
+                bed_alias = "total_uti_beds" if "uti" in q else "total_beds"
                 return f"""
 WITH
 vaccination_by_state AS (
@@ -330,7 +432,7 @@ vaccination_by_state AS (
 beds_by_state AS (
     SELECT
         {relationship.target_column} AS uf,
-        SUM(UTI_TOTAL_EXIST) AS total_uti_beds
+        SUM({bed_metric}) AS {bed_alias}
     FROM {relationship.target_table}
     WHERE {relationship.target_column} != ''
       AND {relationship.target_temporal_column} = (
@@ -342,34 +444,17 @@ beds_by_state AS (
 SELECT
     v.uf,
     v.total_doses,
-    b.total_uti_beds
+    b.{bed_alias}
 FROM vaccination_by_state AS v
 INNER JOIN beds_by_state AS b
     ON v.uf = b.uf
-ORDER BY v.total_doses DESC, b.total_uti_beds DESC
-LIMIT 100
+ORDER BY v.total_doses DESC, b.{bed_alias} DESC
 """.strip()
 
         if set(selected_datasets) == {"surtos-srag", "atencao-basica"} and relationships:
             relationship = relationships[0]
             if relationship.requires_preaggregation:
-                question_lower = question.lower()
-                asks_municipality_count = (
-                    "quantos municípios" in question_lower
-                    or "quantos municipios" in question_lower
-                    or "em quantos municípios" in question_lower
-                    or "em quantos municipios" in question_lower
-                )
-                requested_limit_match = re.search(
-                    r"\b(?:top|primeiros?|primeiras?)\s+(\d{1,3})\b",
-                    question_lower,
-                )
-                if requested_limit_match:
-                    result_limit = min(max(int(requested_limit_match.group(1)), 1), 100)
-                elif any(term in question_lower for term in ("maior", "maiores", "mais notificações", "ranking")):
-                    result_limit = 10
-                else:
-                    result_limit = 100
+                asks_municipality_count = municipality_count
                 if asks_municipality_count:
                     return f"""
 WITH
@@ -410,8 +495,7 @@ SELECT
 FROM srag_by_municipality AS s
 INNER JOIN ubs_by_municipality AS u
     ON s.ibge = u.ibge
-ORDER BY s.total_srag DESC
-LIMIT {result_limit}
+ORDER BY s.total_srag DESC, s.ibge ASC
 """.strip()
 
         return None
@@ -425,47 +509,51 @@ LIMIT {result_limit}
             get_table_name(dataset).lower(): get_table_name(dataset)
             for dataset in selected_datasets
         }
-        alias_to_table: Dict[str, str] = {}
+        from sqlglot.optimizer.scope import Scope, traverse_scope
 
         for table_node in parsed.find_all(exp.Table):
-            table_name_lower = table_node.name.lower()
-            if table_name_lower in cte_names:
-                continue
-            canonical_table = allowed_tables.get(table_name_lower)
-            if canonical_table:
-                table_node.set("this", exp.to_identifier(canonical_table))
-                alias_to_table[table_node.alias_or_name.lower()] = canonical_table
+            name = table_node.name.lower()
+            if name not in cte_names and name in allowed_tables:
+                table_node.set("this", exp.to_identifier(allowed_tables[name]))
 
-        table_columns = {
-            table_name: {
-                column_name.lower(): column_name
-                for column_name in self._allowed_columns_for_table(table_name)
-            }
-            for table_name in allowed_tables.values()
-        }
-
-        for column_node in parsed.find_all(exp.Column):
-            column_lower = column_node.name.lower()
-            table_alias = (column_node.table or "").lower()
-            canonical = None
-
-            if table_alias in alias_to_table:
-                canonical = table_columns.get(alias_to_table[table_alias], {}).get(column_lower)
-            elif not table_alias:
-                matches = {
-                    columns[column_lower]
-                    for columns in table_columns.values()
-                    if column_lower in columns
-                }
-                if len(matches) == 1:
-                    canonical = matches.pop()
-
-            if canonical:
-                column_node.set("this", exp.to_identifier(canonical))
+        # Resolve reused aliases within their own scopes.
+        for scope in traverse_scope(parsed):
+            sources = {}
+            source_aliases = {alias.lower(): alias for alias in scope.sources}
+            for alias, source in scope.sources.items():
+                if isinstance(source, Scope):
+                    names = source.expression.named_selects
+                elif isinstance(source, exp.Table) and source.name in allowed_tables.values():
+                    names = self._allowed_columns_for_table(source.name)
+                else:
+                    names = []
+                sources[alias.lower()] = {name.lower(): name for name in names}
+            output_aliases = {node.alias.lower() for node in scope.expression.expressions if node.alias}
+            for column in scope.columns:
+                key = column.name.lower()
+                if column.table:
+                    canonical = sources.get(column.table.lower(), {}).get(key)
+                else:
+                    # Preserve explicit projection aliases.
+                    if key in output_aliases and not column.find_ancestor(exp.Alias):
+                        # Qualify WHERE fields to prevent aggregate-alias substitution.
+                        owners = [(alias, names[key]) for alias, names in sources.items() if key in names]
+                        where = scope.expression.args.get("where")
+                        if where is not None and column.find_ancestor(exp.Where) is where and len(owners) == 1:
+                            alias, name = owners[0]
+                            column.set("this", exp.to_identifier(name))
+                            column.set("table", exp.to_identifier(source_aliases[alias]))
+                        continue
+                    matches = {names[key] for names in sources.values() if key in names}
+                    canonical = next(iter(matches)) if len(matches) == 1 else None
+                if canonical:
+                    column.set("this", exp.to_identifier(canonical))
 
         return parsed.sql(dialect="clickhouse")
 
     def validate_sql(self, sql: str, selected_datasets: Sequence[str], relationships: Sequence[Relationship]) -> SqlValidationResult:
+        if len(selected_datasets) > 1 and not self.relationships_cover(selected_datasets, relationships):
+            return SqlValidationResult(False, [], [], [], ["Relacionamentos não cobrem todas as bases selecionadas"])
         if not sql:
             return SqlValidationResult(False, [], [], [], ["SQL vazio"])
 
@@ -481,7 +569,7 @@ LIMIT {result_limit}
         except Exception as exc:
             return SqlValidationResult(False, [], [], [], [f"Falha ao parsear SQL: {exc}"])
 
-        if not isinstance(parsed, (exp.Select, exp.With)):
+        if not isinstance(parsed, (exp.Select, exp.Union)):
             return SqlValidationResult(False, [], [], [], ["A consulta deve começar com SELECT ou WITH seguido de SELECT"])
 
         cte_names = {cte.alias_or_name for cte in parsed.find_all(exp.CTE)} if hasattr(parsed, "find_all") else set()
@@ -553,11 +641,19 @@ LIMIT {result_limit}
                         physical_tables,
                         joins,
                         list(cte_names),
-                        [f"Relacionamento {relationship.id} exige pré-agregação dos dois lados antes do JOIN"],
+                        [f"A junção exige pré-agregação dos dois lados antes do JOIN: "
+                         f"agregue {relationship.source_table} por {relationship.source_column} "
+                         f"e {relationship.target_table} por {relationship.target_column} em CTEs/subconsultas separadas"],
                     )
                 preaggregated_pairs[relationship.id] = pairs
 
         for join_node in join_nodes:
+            # Scalar aggregate CTEs do not multiply source rows.
+            if (len(selected_datasets) == 1
+                    and not join_node.args.get("on")
+                    and not join_node.args.get("side")
+                    and self._scalar_cte_cross_join(parsed, join_node)):
+                continue
             on_expression = join_node.args.get("on")
             if on_expression is None:
                 return SqlValidationResult(False, physical_tables, joins, list(cte_names), ["JOIN sem condição ON não é permitido"])
@@ -571,10 +667,58 @@ LIMIT {result_limit}
             if any(normalized in pairs for pairs in preaggregated_pairs.values()):
                 continue
 
+            if len(selected_datasets) == 1 and self._same_base_grouped_join(parsed, join_node):
+                continue
+
             if normalized not in allowed_pairs:
                 return SqlValidationResult(False, physical_tables, joins, list(cte_names), [f"JOIN não autorizado: {join_text}"])
 
         return SqlValidationResult(True, physical_tables, joins, list(cte_names), [])
+
+    @staticmethod
+    def _same_base_grouped_join(parsed, join):
+        """Allow equality of unique group keys within one authorized dataset."""
+        from sqlglot.optimizer.scope import Scope, traverse_scope
+        on = join.args.get('on')
+        if not isinstance(on, exp.EQ) or not all(isinstance(c, exp.Column) and c.table for c in (on.this,on.expression)):
+            return False
+        parent = join.find_ancestor(exp.Select)
+        scope = next((s for s in traverse_scope(parsed) if s.expression is parent), None)
+        if scope is None or on.this.table == on.expression.table:
+            return False
+        for column in (on.this, on.expression):
+            source = scope.sources.get(column.table)
+            if not isinstance(source, Scope) or not isinstance(source.expression, exp.Select):
+                return False
+            query = source.expression
+            group = query.args.get('group')
+            if not group or len(group.expressions) != 1 or not isinstance(group.expressions[0], exp.Column):
+                return False
+            projection = next((p for p in query.expressions if p.alias_or_name == column.name), None)
+            if projection is None or not isinstance(projection.unalias(), exp.Column):
+                return False
+            if group.expressions[0].name not in {projection.alias_or_name, projection.unalias().name}:
+                return False
+        return True
+
+    @staticmethod
+    def _scalar_cte_cross_join(parsed, join):
+        scalar_names = set()
+        for cte in parsed.find_all(exp.CTE):
+            query = cte.this
+            if not isinstance(query, exp.Select) or query.args.get("group"):
+                continue
+            if any(agg.find_ancestor(exp.Select) is query and not agg.find_ancestor(exp.Window)
+                   for agg in query.find_all(exp.AggFunc)):
+                scalar_names.add(cte.alias_or_name.lower())
+        parent = join.find_ancestor(exp.Select)
+        source = parent.args.get("from_") or parent.args.get("from") if parent else None
+        if not source:
+            return False
+        sources = [source.this] + [item.this for item in parent.args.get("joins", [])]
+        # Allow one non-scalar source alongside scalar CTEs.
+        return (len(sources) >= 2 and all(isinstance(item, exp.Table) for item in sources)
+                and sum(item.name.lower() not in scalar_names for item in sources) <= 1)
 
     def _allowed_join_pairs(self, relationships: Sequence[Relationship]) -> List[str]:
         allowed_pairs = []
@@ -684,7 +828,7 @@ LIMIT {result_limit}
 
         source_aliases = []
         target_aliases = []
-        for cte in parsed.find_all(exp.CTE):
+        for cte in list(parsed.find_all(exp.CTE)) + list(parsed.find_all(exp.Subquery)):
             source_alias = cte_key_alias(cte, relationship.source_table, relationship.source_column)
             if source_alias:
                 source_aliases.append(source_alias)

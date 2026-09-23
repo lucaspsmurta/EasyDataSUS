@@ -3,6 +3,7 @@ from llm.base import LLMProvider
 import os
 import logging
 import time
+from services.generation_diagnostics import record
 
 logger = logging.getLogger(__name__)
 
@@ -65,6 +66,9 @@ class OllamaProvider(LLMProvider):
                 logger.debug(f"Resposta JSON recebida")
                 
                 result = response_json.get("response", "")
+                record('llm_response', model=self.model, response=result,
+                       done_reason=response_json.get('done_reason'),
+                       eval_count=response_json.get('eval_count'))
                 logger.debug(f"Resposta extraída ({len(result)} chars): {repr(result[:150])}")
                 
                 return result if result else ""

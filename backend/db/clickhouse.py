@@ -3,6 +3,7 @@ import logging
 import os
 from dotenv import load_dotenv
 from functools import lru_cache
+from clickhouse_connect.driver.exceptions import DatabaseError
 
 load_dotenv()
 logger = logging.getLogger(__name__)
@@ -35,6 +36,15 @@ def get_client():
         logger.error(f"Erro ao conectar ao ClickHouse: {e}")
         raise
 
+def validate_query(sql: str):
+    """Run EXPLAIN after authorization; does not validate analytical correctness."""
+    try:
+        get_client().query("EXPLAIN PLAN " + sql, settings={"max_execution_time": 15})
+        return []
+    except Exception as exc:
+        return ["ClickHouse: " + str(exc)[:2500]]
+
+
 def run_query(sql: str, retry_count: int = 3):
     """Executa query no ClickHouse com retry logic"""
     
@@ -43,10 +53,18 @@ def run_query(sql: str, retry_count: int = 3):
     for attempt in range(retry_count):
         try:
             client = get_client()
-            result = client.query(sql)
+            result = client.query(sql, settings={
+                "max_execution_time": 60,
+                "max_result_rows": 100000,
+                "result_overflow_mode": "throw",
+            })
             logger.info(f"Query executada com sucesso. Linhas: {len(result.result_rows)}")
             return result.result_rows
         
+        except DatabaseError as e:
+            # Repeating invalid SQL cannot fix a name/type/aggregation error.
+            logger.error("ClickHouse rejeitou a consulta: %s", e)
+            return {"error": str(e), "sql": sql, "message": str(e)}
         except Exception as e:
             logger.error(f"Erro na query (tentativa {attempt + 1}/{retry_count}): {e}")
             
