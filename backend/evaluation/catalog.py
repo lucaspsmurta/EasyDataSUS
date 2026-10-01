@@ -2,7 +2,7 @@
 import re
 from pathlib import Path
 
-VERSION = "reference-v3"
+VERSION = "reference-v4"
 ROOT = Path(__file__).resolve().parents[2]
 V, U, S, B = "covid-19-vacinacao", "atencao-basica", "surtos-srag", "leitos"
 LATEST = "COMP = (SELECT max(COMP) FROM leitos)"
@@ -96,7 +96,7 @@ def catalog():
         note="ETL converte coordenadas ausentes/inválidas em zero; não basta IS NOT NULL.")
     extrema(24, "Quais municípios positivos têm mais UBS distintas com CNES positivo e coordenadas não zero nos intervalos latitude [-90,90] e longitude [-180,180]?",
             f"SELECT ibge AS municipio, uniqExact(cnes) AS total {ubase} AND ibge > 0 AND {coords} GROUP BY municipio", "municipio,total")
-    add(25, "Qual a contagem de CNES distintos positivos por UF, município e bairro não vazio da base UBS? Retorne todos os grupos; não una bairros homônimos de municípios diferentes.",
+    add(25, "Qual a contagem de CNES distintos positivos por UF não vazia, código de município positivo e bairro não vazio após remover espaços nas extremidades, na base UBS? Preserve o nome original do bairro no agrupamento. Retorne todos os grupos; não una bairros homônimos de municípios diferentes.",
         f"SELECT uf, ibge AS municipio, bairro, uniqExact(cnes) AS total {ubase} AND toString(uf) != '' AND ibge > 0 AND trimBoth(bairro) != '' GROUP BY uf,municipio,bairro", "uf,municipio,bairro,total")
     add(28, "Quantas UBS distintas com CNES positivo possuem logradouro e bairro não vazios após remover espaços nas extremidades?",
         f"SELECT uniqExact(cnes) AS total {ubase} AND trimBoth(logradouro) != '' AND trimBoth(bairro) != ''", "total")
@@ -154,7 +154,7 @@ def catalog():
     add(57,"Qual a soma de LEITOS_SUS, na maior COMP global de leitos, em linhas cujo código NATUREZA_JURIDICA, após remover espaços externos, começa com '2' ou '3'? Não use TP_GESTAO para esse filtro.",
         f"SELECT sum(LEITOS_SUS) AS total FROM leitos WHERE {LATEST} AND (startsWith(trimBoth(NATUREZA_JURIDICA),'2') OR startsWith(trimBoth(NATUREZA_JURIDICA),'3'))", "total",
         note="Pergunta revisada para filtro explícito de códigos. Não equivale automaticamente à formulação original sobre iniciativa privada; revisar classificação jurídica da fonte antes de interpretar como setor privado.")
-    extrema(58,"Qual UF não vazia tem maior percentual da soma de LEITOS_SUS sobre LEITOS_EXISTENTES na maior COMP global? Exclua denominadores zero.",
+    extrema(58,"Qual UF não vazia tem maior percentual da soma de LEITOS_SUS sobre LEITOS_EXISTENTES na maior COMP global? Considere somente UFs cuja soma de LEITOS_EXISTENTES seja positiva.",
             f"SELECT UF AS uf, 100.0 * sum(LEITOS_SUS) / sum(LEITOS_EXISTENTES) AS percentual FROM leitos WHERE {LATEST} AND UF != '' GROUP BY UF HAVING sum(LEITOS_EXISTENTES) > 0", "uf,percentual", metric="percentual")
     add(59,"Retorne REGIAO, soma de LEITOS_EXISTENTES e soma de LEITOS_SUS para todas as regiões não vazias na maior COMP global de leitos.",
         f"SELECT REGIAO AS regiao, sum(LEITOS_EXISTENTES) AS existentes, sum(LEITOS_SUS) AS sus FROM leitos WHERE {LATEST} AND REGIAO != '' GROUP BY REGIAO", "regiao,existentes,sus")
@@ -193,4 +193,4 @@ def catalog():
             c['repeat_of'] = seen[c['question']]
         else:
             seen[c['question']] = c['id']
-    return dict(version=VERSION, revision_notes="Contrato de saída explícito; tolerâncias por coluna; normalização restrita a ano e nome de indicador; conversão de idade explicitada; duplicatas marcadas. Protocolo novo, sem reclassificação das rodadas v2; revisão humana pendente.", status="draft", global_specification=GLOBAL, cases=list(cases.values()))
+    return dict(version=VERSION, revision_notes="Q25 explicita UF não vazia, município positivo e bairro não vazio após trim, preservando o nome no agrupamento. Q58 explicita denominador positivo. SQLs e regras de comparação idênticos ao v3; enunciados novos, sem reclassificação das rodadas anteriores; revisão humana pendente.", status="draft", global_specification=GLOBAL, cases=list(cases.values()))

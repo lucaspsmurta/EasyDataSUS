@@ -16,6 +16,25 @@ from routes.query import ask, AskRequest, sanitize_sql, _error_response
 
 
 class AnalyticalRegressions(unittest.TestCase):
+    def test_generic_nouns_do_not_require_unrelated_columns(self):
+        sql = 'SELECT bairro, COUNT(DISTINCT cnes) FROM atencao_basica GROUP BY bairro'
+        for wording in ['Preserve o nome original do bairro',
+                        'Preserve a descrição original do bairro e seu valor',
+                        'PRESERVE O NOME ORIGINAL DO BAIRRO']:
+            with self.subTest(wording=wording):
+                self.assertEqual([], contract_errors(sql, wording, ['NOME', 'DESCRICAO', 'VALOR', 'BAIRRO']))
+
+    def test_explicit_generic_column_names_remain_required(self):
+        for question in ['Retorne o campo nome', 'Retorne a coluna "nome"',
+                         'Retorne `nome`', 'Retorne NOME', "Filtre nome = 'UBS'",
+                         'RETORNE O CAMPO NOME']:
+            with self.subTest(question=question):
+                self.assertIn('Campo solicitado ausente: NOME',
+                              contract_errors('SELECT bairro FROM atencao_basica', question, ['NOME']))
+                self.assertEqual([], contract_errors('SELECT nome FROM atencao_basica', question, ['NOME']))
+        self.assertIn('Campo explicitamente excluído: NOME',
+                      contract_errors('SELECT nome FROM atencao_basica', 'Não use NOME', ['NOME']))
+
     def test_same_base_group_keys_can_join_without_relationship_catalog(self):
         sql = 'WITH a AS (SELECT sg_uf_not AS uf, COUNT(*) AS n FROM srag WHERE evolucao=2 GROUP BY sg_uf_not), b AS (SELECT sg_uf_not AS uf, COUNT(*) AS n FROM srag GROUP BY sg_uf_not) SELECT a.uf, 100.0*a.n/b.n FROM a JOIN b ON a.uf=b.uf'
         self.assertTrue(service.validate_sql(sql, ['surtos-srag'], []).valid)

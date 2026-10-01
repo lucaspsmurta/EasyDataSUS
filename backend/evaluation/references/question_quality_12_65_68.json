@@ -1,0 +1,320 @@
+{
+  "schema_version": 1,
+  "review_kind": "ai_assisted",
+  "reviewer": "Codex",
+  "reviewed_at": "2026-09-29T00:02:00.550862+00:00",
+  "status": "provisional_requires_human_review",
+  "source_report": "experimentos\\qualidade_perguntas_v4_avaliador_v5_1.json",
+  "source_report_sha256": "c8a49342ba95274d65025872ea8ec3a4a90eb6801eac8201712825b133d5706b",
+  "metadata_sha256": "58da0a30c55ce1451e649e735c3c0a762234ac4eef17d72d198bfa1d5909e58a",
+  "rubric_sha256": "d964f3abd992319869d44b7b72958dbe63c68b3d19331e158053013e1ef35a17",
+  "limitations": [
+    "Referência assistida por IA, não revisão humana independente.",
+    "Casos escolhidos após observar falhas; não são amostra independente nem permitem estimar acurácia geral.",
+    "Apenas pergunta, contexto e metadados congelados; sem gabaritos SQL, execução ou comprovação de cobertura.",
+    "Suporte parcial é a convenção quando componentes existem mas falta integração cadastrada; not_assessable é alternativa discutível que exige decisão humana.",
+    "Disponibilidade considera medidas brutas viáveis nos metadados, separando ambiguidade de formulação; não valida toda interpretação possível."
+  ],
+  "sources": {
+    "relationship_inventory": {
+      "relationships": [
+        {
+          "id": "srag_ubs_municipio_notificacao",
+          "description": "Relaciona notificações de SRAG às UBS do município",
+          "source_dataset": "surtos-srag",
+          "source_table": "srag",
+          "source_column": "co_mun_not",
+          "target_dataset": "atencao-basica",
+          "target_table": "atencao_basica",
+          "target_column": "ibge",
+          "join_type": "INNER",
+          "common_dimension": "municipality",
+          "source_granularity": "notification",
+          "target_granularity": "health_facility",
+          "cardinality": "many-to-many",
+          "requires_preaggregation": true,
+          "source_temporal_column": "",
+          "target_temporal_column": "",
+          "use_latest_target_period": false,
+          "analytical_notes": "Compare contagens agregadas por município; não faça JOIN direto entre registros de casos e estabelecimentos.",
+          "result_notes": [
+            "As notificações de SRAG são agrupadas pelo município de notificação, que pode ser diferente do município de residência do paciente."
+          ]
+        },
+        {
+          "id": "vacinacao_leitos_uf",
+          "description": "Relaciona registros de vacinação à oferta de leitos hospitalares por unidade federativa",
+          "source_dataset": "covid-19-vacinacao",
+          "source_table": "vacinacao",
+          "source_column": "paciente_endereco_uf",
+          "target_dataset": "leitos",
+          "target_table": "leitos",
+          "target_column": "UF",
+          "join_type": "INNER",
+          "common_dimension": "state",
+          "source_granularity": "vaccination_record",
+          "target_granularity": "health_facility_competence",
+          "cardinality": "many-to-many",
+          "requires_preaggregation": true,
+          "source_temporal_column": "",
+          "target_temporal_column": "COMP",
+          "use_latest_target_period": true,
+          "analytical_notes": "A base de vacinação permite contar registros ou doses aplicadas por UF, mas não calcular cobertura vacinal sem um denominador populacional.",
+          "limitation_keywords": [
+            "cobertura",
+            "percentual",
+            "taxa"
+          ]
+        }
+      ]
+    },
+    "field:covid-19-vacinacao:vacina_fabricante_nome": {
+      "type": "String",
+      "description": "Nome da fabricante da vacina"
+    },
+    "field:surtos-srag:NU_NOTIFIC": {
+      "type": "BIGINT",
+      "description": "Número único de notificação do caso",
+      "importante": true,
+      "chave_primaria": true
+    },
+    "field:surtos-srag:SG_UF_NOT": {
+      "type": "STRING",
+      "description": "Sigla da Unidade Federativa de notificação",
+      "formato": "Sigla de 2 caracteres",
+      "importante": true,
+      "valores_possiveis": [
+        "AC",
+        "AL",
+        "AP",
+        "AM",
+        "BA",
+        "CE",
+        "DF",
+        "ES",
+        "GO",
+        "MA",
+        "MT",
+        "MS",
+        "MG",
+        "PA",
+        "PB",
+        "PR",
+        "PE",
+        "PI",
+        "RJ",
+        "RN",
+        "RS",
+        "RO",
+        "RR",
+        "SC",
+        "SP",
+        "SE",
+        "TO"
+      ]
+    },
+    "field:surtos-srag:SG_UF": {
+      "type": "STRING",
+      "description": "Sigla da Unidade Federativa de residência",
+      "formato": "Sigla de 2 caracteres",
+      "importante": true
+    },
+    "field:leitos:UTI_TOTAL_SUS": {
+      "type": "Int32",
+      "description": "Quantidade de leitos de UTI disponíveis pelo SUS"
+    },
+    "field:leitos:UF": {
+      "type": "String",
+      "description": "Unidade Federativa (Estado)"
+    },
+    "field:leitos:COMP": {
+      "type": "String",
+      "description": "Competência (período de referência dos dados)"
+    },
+    "field:surtos-srag:CO_MUN_NOT": {
+      "type": "INT",
+      "description": "Código IBGE do município de notificação",
+      "importante": true
+    },
+    "field:atencao-basica:CNES": {
+      "type": "INT",
+      "description": "Código CNES - identificador único da Unidade Básica de Saúde",
+      "importante": true,
+      "chave_primaria": true,
+      "comprimento": 7
+    },
+    "field:atencao-basica:IBGE": {
+      "type": "INT",
+      "description": "Código IBGE do município (geocódigo de 6 dígitos)",
+      "importante": true,
+      "comprimento": 6
+    },
+    "field:leitos:CO_IBGE": {
+      "type": "String",
+      "description": "Código IBGE do município"
+    },
+    "field:leitos:LEITOS_EXISTENTES": {
+      "type": "Int32",
+      "description": "Quantidade total de leitos existentes no estabelecimento"
+    },
+    "field:leitos:LEITOS_SUS": {
+      "type": "Int32",
+      "description": "Quantidade de leitos disponíveis pelo SUS"
+    }
+  },
+  "cases": [
+    {
+      "id": 12,
+      "question": "Qual fabricante não vazio tem mais registros de vacinação? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: fabricante,total.",
+      "context": "",
+      "dimensions": {
+        "context_completeness": {
+          "status": "pass",
+          "justification": "A consulta irrestrita ao conjunto de vacinação é suficiente para este agregado. Não há necessidade demonstrada de impor período ou local. Esta é uma convenção da rubrica, não um contexto literalmente declarado.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "analytical_specificity": {
+          "status": "pass",
+          "justification": "A unidade contada é o registro de vacinação; fabricante é o agrupamento. Há filtro de fabricante não vazio, máximo, todos os empates e ordem de colunas explícitos.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "unambiguity": {
+          "status": "pass",
+          "justification": "A comparação pelo máximo e o tratamento de empates estão explícitos. Não se identificou ambiguidade central que altere a operação solicitada.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "data_availability": {
+          "status": "pass",
+          "justification": "vacina_fabricante_nome permite filtrar e agrupar; o total é COUNT dos registros. Não é necessário um campo total nem dados de município ou período.",
+          "evidence_sources": [
+            "field:covid-19-vacinacao:vacina_fabricante_nome"
+          ]
+        },
+        "implementation_support": {
+          "status": "pass",
+          "justification": "A operação usa uma única base de vacinação; não requer relacionamento cadastrado. Suporte de metadados não comprova execução nem cobertura real.",
+          "evidence_sources": [
+            "field:covid-19-vacinacao:vacina_fabricante_nome",
+            "relationship_inventory"
+          ]
+        }
+      }
+    },
+    {
+      "id": 65,
+      "question": "Qual é a quantidade de leitos de UTI SUS nos estados com maior número de notificações de SRAG?",
+      "context": "",
+      "dimensions": {
+        "context_completeness": {
+          "status": "partial",
+          "justification": "Falta alinhar período das notificações com competência do estoque de leitos. Estados já define a granularidade; não é necessário exigir um estado específico.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "analytical_specificity": {
+          "status": "partial",
+          "justification": "Medida de UTI SUS e agrupamento por estado estão definidos, mas falta delimitar quais posições ou corte compõem os estados com maior número.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "unambiguity": {
+          "status": "fail",
+          "justification": "Maior número pode selecionar somente o máximo com empates ou os cinco primeiros estados. Município/UF de notificação e de residência também não são equivalentes. As escolhas mudam o resultado.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "data_availability": {
+          "status": "pass",
+          "justification": "NU_NOTIFIC e SG_UF_NOT permitem contar notificações por UF; UTI_TOTAL_SUS e UF permitem agregar leitos. COMP identifica competência. A nota considera medidas brutas, sem comprovar cobertura histórica.",
+          "evidence_sources": [
+            "field:surtos-srag:NU_NOTIFIC",
+            "field:surtos-srag:SG_UF_NOT",
+            "field:surtos-srag:SG_UF",
+            "field:leitos:UTI_TOTAL_SUS",
+            "field:leitos:UF",
+            "field:leitos:COMP"
+          ]
+        },
+        "implementation_support": {
+          "status": "partial",
+          "justification": "Os componentes têm campos, mas o inventário não registra integração SRAG–leitos. Suporte parcial não significa impossibilidade de SQL. Seria necessário validar chaves, competências e agregação antes da combinação.",
+          "evidence_sources": [
+            "field:surtos-srag:NU_NOTIFIC",
+            "field:surtos-srag:SG_UF_NOT",
+            "field:surtos-srag:SG_UF",
+            "field:leitos:UTI_TOTAL_SUS",
+            "field:leitos:UF",
+            "field:leitos:COMP",
+            "relationship_inventory"
+          ]
+        }
+      }
+    },
+    {
+      "id": 68,
+      "question": "Quais municípios combinam alto número de notificações de SRAG, UBS cadastradas e baixa disponibilidade de leitos?",
+      "context": "",
+      "dimensions": {
+        "context_completeness": {
+          "status": "partial",
+          "justification": "Municípios define a granularidade. Falta período das notificações e referência temporal dos estoques/cadastros para tornar a comparação interpretável.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "analytical_specificity": {
+          "status": "partial",
+          "justification": "Há entidades e medidas identificáveis, mas alto/baixa não definem cortes e disponibilidade de leitos não especifica tipo ou unidade de comparação.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "unambiguity": {
+          "status": "fail",
+          "justification": "Alto pode significar maior contagem absoluta ou taxa; baixa pode significar poucos leitos totais ou por habitante. Faltam critérios para escolher interpretações que produzem seleções distintas.",
+          "evidence_sources": [
+            "question"
+          ]
+        },
+        "data_availability": {
+          "status": "pass",
+          "justification": "Há campos para contagens brutas de notificações e UBS, quantidades de leitos e códigos municipais. Esta nota não presume taxa por habitante: tal interpretação precisaria de denominador adicional e nova análise.",
+          "evidence_sources": [
+            "field:surtos-srag:NU_NOTIFIC",
+            "field:surtos-srag:CO_MUN_NOT",
+            "field:atencao-basica:CNES",
+            "field:atencao-basica:IBGE",
+            "field:leitos:CO_IBGE",
+            "field:leitos:LEITOS_EXISTENTES",
+            "field:leitos:LEITOS_SUS",
+            "field:leitos:COMP"
+          ]
+        },
+        "implementation_support": {
+          "status": "partial",
+          "justification": "SRAG–UBS tem relação municipal cadastrada com pré-agregação obrigatória. Falta ponte cadastrada com leitos; é preciso validar códigos e competência. A ausência não demonstra impossibilidade técnica.",
+          "evidence_sources": [
+            "field:surtos-srag:NU_NOTIFIC",
+            "field:surtos-srag:CO_MUN_NOT",
+            "field:atencao-basica:CNES",
+            "field:atencao-basica:IBGE",
+            "field:leitos:CO_IBGE",
+            "field:leitos:LEITOS_EXISTENTES",
+            "field:leitos:LEITOS_SUS",
+            "field:leitos:COMP",
+            "relationship_inventory"
+          ]
+        }
+      }
+    }
+  ]
+}

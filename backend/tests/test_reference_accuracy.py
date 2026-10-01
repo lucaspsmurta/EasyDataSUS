@@ -18,9 +18,9 @@ class ReferenceAccuracyTests(unittest.TestCase):
         self.assertTrue(compare_rows([['pos_pcrflu',8190]],[['POS_PCRFLU',8190]],{'columns':{'0':{'normalization':'casefold'}}}))
         self.assertFalse(compare_rows([['pos_pcrflu',8190]],[['POS_PCRFLU',8190]],{}))
 
-    def test_protocol_v3_ratio_and_repeated_cases(self):
+    def test_protocol_v4_ratio_and_repeated_cases(self):
         spec = catalog()
-        self.assertEqual('reference-v3',spec['version'])
+        self.assertEqual('reference-v4',spec['version'])
         c = {x['id']:x for x in spec['cases']}
         self.assertFalse(compare_rows([[0.6620176662]],[[0.6592319279]],c[5]['comparison']))
         self.assertTrue(compare_rows([[0.6620176662]],[[0.662018]],c[5]['comparison']))

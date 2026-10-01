@@ -25,6 +25,7 @@ Contrato analítico (prevalece sobre exemplos):
 - Proteja denominadores com NULLIF(denominador, 0); resultado indefinido é NULL.
 - Percentual/porcentagem deve estar na escala 0 a 100: 100.0 * numerador / denominador.
   Razão/proporção sem pedido de percentual permanece na escala de razão.
+- Razão entre A e B significa A / B, nessa ordem. Não inverta numerador e denominador.
 - Use parênteses para agrupar alternativas OR sob filtros comuns com AND.
 - Indicadores simultâneos não são categorias exclusivas: não use CASE que perde sobreposições.
 - Para 'ao menos um' indicador positivo, conte cada linha uma única vez:
@@ -35,6 +36,10 @@ Contrato analítico (prevalece sobre exemplos):
 - Dê às agregações aliases distintos dos campos físicos (ex.: total_febre, não febre),
   pois o ClickHouse pode substituir o alias no WHERE e rejeitar a consulta.
 - IS NOT NULL não exclui ''. Para texto não vazio, use coluna != '' ou notEmpty(coluna).
+- Nunca compare coluna numérica com ''. Se o pedido filtra sua representação textual,
+  use toString(coluna) != ''; preserve separadamente filtros positivos como CNES > 0.
+- Uma instrução para NÃO usar um campo não solicita esse campo. Nomes de saída podem
+  ser aliases: municipio pode representar um código, não necessariamente a coluna MUNICIPIO.
 - Coordenadas não zero exigem latitude != 0 E longitude != 0, além dos intervalos.
 - positionCaseInsensitiveUTF8 recebe primeiro o texto/coluna e depois o trecho buscado.
 - Percentuais por categoria sobre um total compartilhado exigem denominador global
@@ -56,6 +61,27 @@ def prepare_sql(sql, question):
             if not isinstance(denominator, exp.Nullif):
                 division.set('expression', exp.Nullif(this=denominator.copy(), expression=exp.Literal.number(0)))
     return tree.sql(dialect='clickhouse')
+
+
+def explicitly_mentions_column(question, column):
+    name = re.escape(column)
+    mentions = list(re.finditer(r'\b' + name + r'\b', question, re.IGNORECASE))
+    if not mentions:
+        return False
+    # Generic nouns need evidence of an identifier, not just prose.
+    if column.lower() not in {'nome', 'descricao', 'codigo', 'tipo', 'valor', 'municipio'}:
+        return True
+    for match in mentions:
+        before, after = question[:match.start()], question[match.end():]
+        if match.group().isupper() and not question.isupper():
+            return True
+        if before.endswith('`') and after.startswith('`'):
+            return True
+        if re.search(r'\b(?:campo|coluna)\s+[\'"]?$', before, re.IGNORECASE):
+            return True
+        if re.match(r'\s*(?:!=|<>|>=|<=|=|>|<)', after):
+            return True
+    return False
 
 
 def contract_errors(sql, question, columns=()):
@@ -98,11 +124,12 @@ def contract_errors(sql, question, columns=()):
         if len(conditional_counts) > 1 and next(tree.find_all(exp.Add), None):
             errors.append('Não some contagens de indicadores sobrepostos; conte linhas com OR entre os indicadores, uma vez por linha')
     for column in columns:
-        if re.search(r'nao (?:use|utilize)\s+' + re.escape(column.lower()) + r'\b', q):
+        if re.search(r'(?:nao (?:use|utilize)|nao substitua por|nao (?:troque|substitua)\s+[^.;,]+?\s+por)\s+'
+                     + re.escape(column.lower()) + r'\b', q):
             if column.lower() in used:
                 errors.append('Campo explicitamente excluído: ' + column)
             continue
-        if re.search(r'\b' + re.escape(column.lower()) + r'\b', question.lower()) and column.lower() not in used:
+        if explicitly_mentions_column(question, column) and column.lower() not in used:
             errors.append('Campo solicitado ausente: ' + column)
     if re.search(r'sem limit|todos os|todas as|inclua todos', q) and tree.args.get('limit'):
         errors.append('LIMIT externo contradiz pedido de resultado completo/empates')
@@ -110,6 +137,25 @@ def contract_errors(sql, question, columns=()):
         errors.append('Agrupamento mensal deve preservar o ano')
     if 'empatad' in q and tree.args.get('group') and not tree.args.get('having') and not tree.args.get('qualify'):
         errors.append('Agregação simples não seleciona somente extremos empatados; use CTE e MAX/MIN')
+    # Detect the common failed repair: remove LIMIT but leave the entire ranking.
+    # Restrict to ordered outer queries without selection, windows or extrema of a metric.
+    metric_extrema = [node for node in tree.find_all(exp.Max, exp.Min)
+                      if not (isinstance(node.this, exp.Column) and node.this.name.lower() == 'comp')]
+    if ('empatad' in q and re.search(r'\bmaior|\bmenor', q) and tree.args.get('order')
+            and not any(tree.args.get(k) for k in ('where', 'having', 'qualify', 'limit'))
+            and not metric_extrema and not next(tree.find_all(exp.Window), None)):
+        errors.append('ORDER BY apenas ordena o ranking; filtre a métrica pelo MAX/MIN global para retornar somente os extremos empatados')
+    if isinstance(columns, dict):
+        numeric = set()
+        for column, info in columns.items():
+            kind = str(info.get('type', info.get('tipo', ''))) if isinstance(info, dict) else str(info)
+            if re.search(r'\b(?:U?Int\d*|Float\d*|Decimal\w*|BIGINT|INTEGER|SMALLINT|DOUBLE|NUMBER)\b', kind, re.I):
+                numeric.add(column.lower())
+        for comparison in tree.find_all(exp.EQ, exp.NEQ):
+            for field, literal in ((comparison.this, comparison.expression), (comparison.expression, comparison.this)):
+                if (isinstance(field, exp.Column) and field.name.lower() in numeric
+                        and isinstance(literal, exp.Literal) and literal.is_string and literal.this == ''):
+                    errors.append(f'{field.name} é numérico: não compare com string vazia; para representação textual use toString({field.sql()}) e preserve os demais filtros')
     if re.search(r'maior (?:competencia|comp)\b|competencia mais recente', q):
         def constrains_period(node):
             if isinstance(node, exp.Paren):
