@@ -1,0 +1,224 @@
+{
+  "diagnostic_only": true,
+  "reference_provisional_ai_assisted": true,
+  "models": {
+    "qwen": {
+      "model": "qwen2.5-coder:7b",
+      "valid_cells": 15,
+      "agreements": 4,
+      "total_cells": 15,
+      "core_seconds": 231.43,
+      "total_seconds": 277.09,
+      "control_label_agreements": 1,
+      "rows": [
+        {
+          "id": 12,
+          "dimension": "context_completeness",
+          "observed": "fail",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 12,
+          "dimension": "analytical_specificity",
+          "observed": "partial",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 12,
+          "dimension": "unambiguity",
+          "observed": "pass",
+          "reference": "pass",
+          "agreement": true
+        },
+        {
+          "id": 12,
+          "dimension": "data_availability",
+          "observed": "partial",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 12,
+          "dimension": "implementation_support",
+          "observed": "fail",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 65,
+          "dimension": "context_completeness",
+          "observed": "fail",
+          "reference": "partial",
+          "agreement": false
+        },
+        {
+          "id": 65,
+          "dimension": "analytical_specificity",
+          "observed": "not_assessable",
+          "reference": "partial",
+          "agreement": false
+        },
+        {
+          "id": 65,
+          "dimension": "unambiguity",
+          "observed": "not_assessable",
+          "reference": "fail",
+          "agreement": false
+        },
+        {
+          "id": 65,
+          "dimension": "data_availability",
+          "observed": "partial",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 65,
+          "dimension": "implementation_support",
+          "observed": "partial",
+          "reference": "partial",
+          "agreement": true
+        },
+        {
+          "id": 68,
+          "dimension": "context_completeness",
+          "observed": "fail",
+          "reference": "partial",
+          "agreement": false
+        },
+        {
+          "id": 68,
+          "dimension": "analytical_specificity",
+          "observed": "partial",
+          "reference": "partial",
+          "agreement": true
+        },
+        {
+          "id": 68,
+          "dimension": "unambiguity",
+          "observed": "partial",
+          "reference": "fail",
+          "agreement": false
+        },
+        {
+          "id": 68,
+          "dimension": "data_availability",
+          "observed": "partial",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 68,
+          "dimension": "implementation_support",
+          "observed": "partial",
+          "reference": "partial",
+          "agreement": true
+        }
+      ]
+    },
+    "llama": {
+      "model": "llama3.1:8b",
+      "valid_cells": 13,
+      "agreements": 8,
+      "total_cells": 15,
+      "core_seconds": 247.58,
+      "total_seconds": 302.64,
+      "control_label_agreements": 2,
+      "rows": [
+        {
+          "id": 12,
+          "dimension": "context_completeness",
+          "observed": "pass",
+          "reference": "pass",
+          "agreement": true
+        },
+        {
+          "id": 12,
+          "dimension": "analytical_specificity",
+          "observed": "pass",
+          "reference": "pass",
+          "agreement": true
+        },
+        {
+          "id": 12,
+          "dimension": "unambiguity",
+          "observed": "fail",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 12,
+          "dimension": "data_availability",
+          "observed": "pass",
+          "reference": "pass",
+          "agreement": true
+        },
+        {
+          "id": 12,
+          "dimension": "implementation_support",
+          "observed": "partial",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 65,
+          "dimension": "context_completeness",
+          "observed": "fail",
+          "reference": "partial",
+          "agreement": false
+        },
+        {
+          "id": 65,
+          "dimension": "analytical_specificity",
+          "observed": "partial",
+          "reference": "partial",
+          "agreement": true
+        },
+        {
+          "id": 65,
+          "dimension": "unambiguity",
+          "observed": "fail",
+          "reference": "fail",
+          "agreement": true
+        },
+        {
+          "id": 68,
+          "dimension": "context_completeness",
+          "observed": "partial",
+          "reference": "partial",
+          "agreement": true
+        },
+        {
+          "id": 68,
+          "dimension": "analytical_specificity",
+          "observed": "pass",
+          "reference": "partial",
+          "agreement": false
+        },
+        {
+          "id": 68,
+          "dimension": "unambiguity",
+          "observed": "fail",
+          "reference": "fail",
+          "agreement": true
+        },
+        {
+          "id": 68,
+          "dimension": "data_availability",
+          "observed": "partial",
+          "reference": "pass",
+          "agreement": false
+        },
+        {
+          "id": 68,
+          "dimension": "implementation_support",
+          "observed": "partial",
+          "reference": "partial",
+          "agreement": true
+        }
+      ]
+    }
+  }
+}

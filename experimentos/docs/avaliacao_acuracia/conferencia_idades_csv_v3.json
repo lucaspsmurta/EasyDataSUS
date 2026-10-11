@@ -1,0 +1,10 @@
+{
+  "covid-19-vacinacao": {
+    "rows": 390911,
+    "explicit_zero_age": 1438
+  },
+  "surtos-srag": {
+    "rows": 92156,
+    "explicit_zero_age": 698
+  }
+}

@@ -1,0 +1,176 @@
+{
+  "diagnostic_only": true,
+  "version": "question-quality-v5.1",
+  "model": "llama3.1:8b",
+  "preparation_origin": "experimentos/qualidade_perguntas_v4_avaliador_v5_llama_piloto.json",
+  "origin_sha256": "8ce6d373c2bf9c3ec9a105c2c030233b3d027e109713c208806b28443cd96803",
+  "purpose": "Verificar recuperação de leitos quando a extração anterior omite esse requisito. Apenas mapeamento e suporte são executados.",
+  "case": {
+    "id": 68,
+    "question": "Quais municípios combinam alto número de notificações de SRAG, UBS cadastradas e baixa disponibilidade de leitos?",
+    "context": "",
+    "dimensions": {
+      "context_completeness": {
+        "status": "not_assessable",
+        "justification": "Etapa não executada neste diagnóstico.",
+        "method": "diagnostic_only"
+      },
+      "analytical_specificity": {
+        "status": "not_assessable",
+        "justification": "Etapa não executada neste diagnóstico.",
+        "method": "diagnostic_only"
+      },
+      "unambiguity": {
+        "status": "not_assessable",
+        "justification": "Etapa não executada neste diagnóstico.",
+        "method": "diagnostic_only"
+      },
+      "data_availability": {
+        "status": "pass",
+        "justification": "Os campos necessários estão presentes no support_map: IBGE, CO_MUN_NOT e NU_NOTIFIC.",
+        "evidence": [
+          {
+            "source": "field:atencao-basica:IBGE",
+            "quote": "INT | Código IBGE do município (geocódigo de 6 dígitos) | {\"comprimento\":6}"
+          }
+        ],
+        "suggestion": "Verificar se os campos estão corretamente mapeados.",
+        "limitation": "none",
+        "method": "llm_preliminary"
+      },
+      "implementation_support": {
+        "status": "fail",
+        "justification": "O relacionamento entre os datasets não está configurado corretamente.",
+        "evidence": [
+          {
+            "source": "relationship:srag_ubs_municipio_notificacao",
+            "quote": "\"many-to-many\",\"requires_preaggregation\":true,\"source_temporal_column\":\"\",\"target_temporal_column\":\"\",\"use_latest_target_period\":false,\"analytical_notes\":\"Compare contagens agregad"
+          }
+        ],
+        "suggestion": "Configurar o relacionamento corretamente.",
+        "limitation": "incompatible_metadata",
+        "method": "llm_preliminary"
+      }
+    },
+    "preparation": {
+      "extract": {
+        "facts": {
+          "measure": "alto número de notificações de SRAG, UBS cadastradas",
+          "population": "municípios",
+          "time_scope": "",
+          "place_scope": "",
+          "filters": "",
+          "grouping": "",
+          "ties": ""
+        }
+      },
+      "map": {
+        "support_map": [
+          {
+            "requirement": "alto número de notificações de SRAG, UBS cadastradas",
+            "fields": [
+              "field:atencao-basica:IBGE",
+              "field:surtos-srag:CO_MUN_NOT",
+              "field:surtos-srag:NU_NOTIFIC"
+            ],
+            "reason": "IBGE é o código do município, CO_MUN_NOT é o código do município de notificação e NU_NOTIFIC é o número de notificação"
+          },
+          {
+            "requirement": "municípios",
+            "fields": [
+              "field:atencao-basica:IBGE",
+              "field:leitos:CO_IBGE",
+              "field:surtos-srag:CO_MUN_NOT"
+            ],
+            "reason": "IBGE é o código do município, CO_IBGE é o código do município e CO_MUN_NOT é o código do município de notificação"
+          },
+          {
+            "requirement": "Quais municípios combinam alto número de notificações de SRAG, UBS cadastradas e baixa disponibilidade de leitos?",
+            "fields": [
+              "field:atencao-basica:IBGE",
+              "field:leitos:CO_IBGE",
+              "field:surtos-srag:CO_MUN_NOT",
+              "field:surtos-srag:NU_NOTIFIC",
+              "field:leitos:LEITOS_EXISTENTES",
+              "field:leitos:LEITOS_SUS"
+            ],
+            "reason": "IBGE é o código do município, CO_IBGE é o código do município, CO_MUN_NOT é o código do município de notificação, NU_NOTIFIC é o número de notificação, LEITOS_S"
+          }
+        ]
+      }
+    },
+    "attempts": [
+      {
+        "group": "map",
+        "dimensions": [
+          "data_availability",
+          "implementation_support"
+        ],
+        "at": "2026-09-28T22:45:32.950781+00:00",
+        "raw_response": "{\"support_map\": [\n  {\"requirement\": \"alto número de notificações de SRAG, UBS cadastradas\", \"fields\": [\"field:atencao-basica:IBGE\", \"field:surtos-srag:CO_MUN_NOT\", \"field:surtos-srag:NU_NOTIFIC\"],\"reason\": \"IBGE é o código do município, CO_MUN_NOT é o código do município de notificação e NU_NOTIFIC é o número de notificação\"},\n  {\"requirement\": \"municípios\", \"fields\": [\"field:atencao-basica:IBGE\", \"field:leitos:CO_IBGE\", \"field:surtos-srag:CO_MUN_NOT\"],\"reason\": \"IBGE é o código do município, CO_IBGE é o código do município e CO_MUN_NOT é o código do município de notificação\"},\n  {\"requirement\": \"Quais municípios combinam alto número de notificações de SRAG, UBS cadastradas e baixa disponibilidade de leitos?\", \"fields\": [\"field:atencao-basica:IBGE\", \"field:leitos:CO_IBGE\", \"field:surtos-srag:CO_MUN_NOT\", \"field:surtos-srag:NU_NOTIFIC\", \"field:leitos:LEITOS_EXISTENTES\", \"field:leitos:LEITOS_SUS\"],\"reason\": \"IBGE é o código do município, CO_IBGE é o código do município, CO_MUN_NOT é o código do município de notificação, NU_NOTIFIC é o número de notificação, LEITOS_S\"}\n]}",
+        "done_reason": "stop",
+        "metrics": {
+          "total_duration": 246779958033,
+          "load_duration": 241707611,
+          "prompt_eval_count": 5228,
+          "prompt_eval_duration": 184965476000,
+          "eval_count": 373,
+          "eval_duration": 61476280000
+        },
+        "elapsed_seconds": 246.78,
+        "errors": {}
+      },
+      {
+        "group": "support",
+        "dimensions": [
+          "data_availability",
+          "implementation_support"
+        ],
+        "at": "2026-09-28T22:49:39.738374+00:00",
+        "raw_response": "{\"dimensions\": {\"data_availability\": {\"status\": \"pass\", \"justification\": \"Os metadados indicam que os dados de atenção básica, leitos e surtos de SRAG estão disponíveis para o período de 2018 a 2026.\",\"evidence\": [{\"source\": \"dataset:atencao-basica\", \"quote\": \"{\\\"descricao\\\": \\\"Dados de Atenção Básica/Primária - Locais de atendimento, cobertura e recursos\\\", \\\"periodo\\\": \\\"2018-2026\\\", \\\"nome_curto\\\": \\\"atencao-basica\\\", \\\"tabela_clickhouse\\\": \\\"atenca\"}],\"suggestion\": \"Verificar a conectividade entre os datasets.\",\"limitation\": \"none\"},\"implementation_support\": {\"status\": \"fail\", \"justification\": \"O relacionamento entre os datasets não está configurado corretamente.\", \"evidence\": [{\"source\": \"relationship:srag_ubs_municipio_notificacao\", \"quote\": \"\\\"many-to-many\\\",\\\"requires_preaggregation\\\":true,\\\"source_temporal_column\\\":\\\"\\\",\\\"target_temporal_column\\\":\\\"\\\",\\\"use_latest_target_period\\\":false,\\\"analytical_notes\\\":\\\"Compare contagens agregad\"}],\"suggestion\": \"Configurar o relacionamento corretamente.\",\"limitation\": \"incompatible_metadata\"}}}",
+        "done_reason": "stop",
+        "metrics": {
+          "total_duration": 64726919659,
+          "load_duration": 250204613,
+          "prompt_eval_count": 1426,
+          "prompt_eval_duration": 28565642000,
+          "eval_count": 280,
+          "eval_duration": 35639259000
+        },
+        "elapsed_seconds": 64.73,
+        "errors": {
+          "data_availability": "pass exige evidência de campo field: presente no support_map, não descrição genérica."
+        }
+      },
+      {
+        "group": "support",
+        "dimensions": [
+          "data_availability"
+        ],
+        "at": "2026-09-28T22:50:44.471627+00:00",
+        "raw_response": "{\"dimensions\": {\"data_availability\": {\"status\": \"pass\", \"justification\": \"Os campos necessários estão presentes no support_map: IBGE, CO_MUN_NOT e NU_NOTIFIC.\",\"evidence\": [{\"source\": \"field:atencao-basica:IBGE\", \"quote\": \"INT | Código IBGE do município (geocódigo de 6 dígitos) | {\\\"comprimento\\\":6}\"}],\"suggestion\": \"Verificar se os campos estão corretamente mapeados.\",\"limitation\": \"none\"} } }",
+        "done_reason": "stop",
+        "metrics": {
+          "total_duration": 17760717218,
+          "load_duration": 246094887,
+          "prompt_eval_count": 1436,
+          "prompt_eval_duration": 1427618000,
+          "eval_count": 128,
+          "eval_duration": 16079482000
+        },
+        "elapsed_seconds": 17.77,
+        "errors": {}
+      }
+    ],
+    "errors": {}
+  },
+  "audit": {
+    "review_kind": "ai_assisted",
+    "missing_beds_recovered": true,
+    "evidence_fields": [
+      "field:leitos:LEITOS_EXISTENTES",
+      "field:leitos:LEITOS_SUS"
+    ],
+    "scope": "Teste direcionado de recuperação de requisitos; não valida acurácia de todas as classificações."
+  }
+}

@@ -1,0 +1,19 @@
+[
+  {
+    "path": "C:\\dev\\easydatasus\\backend\\metadata\\datasets\\surtos-srag\\schema.json",
+    "sha256": "08681283a35f5f1dbe34fa723511a25220482c5db4d7e8b713687b26bdc04424",
+    "field": "EVOLUCAO",
+    "definition": {
+      "type": "INT",
+      "description": "Evolução clínica: 1=Cura, 2=Óbito, 3=Óbito por outras causas, 9=Não informado",
+      "valores_possiveis": [
+        1,
+        2,
+        3,
+        9
+      ],
+      "exemplo": "1",
+      "importante": true
+    }
+  }
+]

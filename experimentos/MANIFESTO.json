@@ -1,0 +1,549 @@
+{
+  "package": "easydatasus-experimentos-dissertacao",
+  "version": "2",
+  "created_at": "2026-10-13T15:47:43.965870-03:00",
+  "repository_head_at_packaging": "b538ce21ac3214d4f9084902d9803a1b7778e289",
+  "code_note": "Commit observado no empacotamento; nao identifica necessariamente o codigo das execucoes historicas. O pacote e os resultados nao alteram a procedencia original.",
+  "primary_results": "acuracia_qwen_catalogo_v5_r2.json",
+  "primary_references": "referencias_68_catalogo_v5.json",
+  "methodological_status": {
+    "references_formally_reviewed_in_primary_run": false,
+    "question_quality_assessment": "exploratory",
+    "response_quality_initial_review": "ai_assisted",
+    "note": "A revisao posterior pelo autor descrita na dissertacao e distinta da procedencia preservada nas fichas iniciais."
+  },
+  "file_count": 57,
+  "total_bytes": 17706677,
+  "files": [
+    {
+      "path": "docs/avaliacao_acuracia/README.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 6447,
+      "sha256": "3f3b3a83e76ee52feaf05fab4c9fe15cd78f9edb55a0afab98a33e26312ac1c0",
+      "source_path": "docs/avaliacao_acuracia/README.md",
+      "source_sha256": "05706f5e6d370f9217da213dcafe5f93a4a2666834c82b4e523e3e387e65b23e",
+      "changes": [
+        "Nota de uso e link para o manifesto ajustados a localizacao do pacote.",
+        "Links e orientacoes adaptados para a pasta unica experimentos."
+      ]
+    },
+    {
+      "path": "docs/avaliacao_acuracia/auditoria_perguntas_v5.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 5508,
+      "sha256": "dd0322285de2dce346cd3ca465734f9052eb51a9dcbea3453a7d846d17c67d3f",
+      "source_path": "docs/avaliacao_acuracia/auditoria_perguntas_v5.md",
+      "source_sha256": "dd0322285de2dce346cd3ca465734f9052eb51a9dcbea3453a7d846d17c67d3f",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/avaliador_perguntas_v6.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 2187,
+      "sha256": "bd19bc88badcb05e35f3a734fe84e35077a270b7ac8c695ac4a02adbf35dd578",
+      "source_path": "docs/avaliacao_acuracia/avaliador_perguntas_v6.md",
+      "source_sha256": "bd19bc88badcb05e35f3a734fe84e35077a270b7ac8c695ac4a02adbf35dd578",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/catalogo_68_v3.json",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 72190,
+      "sha256": "ff0bed09a3f8d6ee32daad7e3a0cba5e3dfd2eb1ea67c2b144f08bd7716bf1bc",
+      "source_path": "docs/avaliacao_acuracia/catalogo_68_v3.json",
+      "source_sha256": "ff0bed09a3f8d6ee32daad7e3a0cba5e3dfd2eb1ea67c2b144f08bd7716bf1bc",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/catalogo_68_v4.json",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 72403,
+      "sha256": "e0c5347bd8f3eb80335a70f0f820e646e9846b1dd54e4feecaf0f1b205893331",
+      "source_path": "docs/avaliacao_acuracia/catalogo_68_v4.json",
+      "source_sha256": "e0c5347bd8f3eb80335a70f0f820e646e9846b1dd54e4feecaf0f1b205893331",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/catalogo_68_v5.json",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 133044,
+      "sha256": "f6c5fd536ba3e09cae31504ce66e587bffb16fc0d85960d7e07783ee803518d6",
+      "source_path": "docs/avaliacao_acuracia/catalogo_68_v5.json",
+      "source_sha256": "f6c5fd536ba3e09cae31504ce66e587bffb16fc0d85960d7e07783ee803518d6",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/catalogo_68_v5.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 39601,
+      "sha256": "2119faed302523399ddb09cb55c14bdd2eced29e47de71ff37e1925a6ecc4cc6",
+      "source_path": "docs/avaliacao_acuracia/catalogo_68_v5.md",
+      "source_sha256": "2119faed302523399ddb09cb55c14bdd2eced29e47de71ff37e1925a6ecc4cc6",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/conferencia_idades_csv_v3.json",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 164,
+      "sha256": "03cd798cef691259abd52e45a4a598a2af3f48e61b7920411ff567d10c33bc39",
+      "source_path": "docs/avaliacao_acuracia/conferencia_idades_csv_v3.json",
+      "source_sha256": "03cd798cef691259abd52e45a4a598a2af3f48e61b7920411ff567d10c33bc39",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/conferencia_referencias_v3.py",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 12916,
+      "sha256": "2fe388dc810690295288e487606eeefcd97788c38312a3d2a73c560d547d485f",
+      "source_path": "docs/avaliacao_acuracia/conferencia_referencias_v3.py",
+      "source_sha256": "2fe388dc810690295288e487606eeefcd97788c38312a3d2a73c560d547d485f",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/conferencia_referencias_v3_resultado.json",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 13256,
+      "sha256": "57c7c0a12ebd0d6e4698efe1d0ebd7b2b78167dc516bc287f1b9e6dc4cf18d34",
+      "source_path": "docs/avaliacao_acuracia/conferencia_referencias_v3_resultado.json",
+      "source_sha256": "57c7c0a12ebd0d6e4698efe1d0ebd7b2b78167dc516bc287f1b9e6dc4cf18d34",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/diagnostico_isolado_v1.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 5257,
+      "sha256": "936af0f34d4f1413bbbe17d7995471780291c954696013bd2da7ead70f448c4f",
+      "source_path": "docs/avaliacao_acuracia/diagnostico_isolado_v1.md",
+      "source_sha256": "936af0f34d4f1413bbbe17d7995471780291c954696013bd2da7ead70f448c4f",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/parecer_referencias_v3.json",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 16475,
+      "sha256": "7f41aa28c52adaf238963a4d216d6871e6c61fba57efccb786e2630c94c4056e",
+      "source_path": "docs/avaliacao_acuracia/parecer_referencias_v3.json",
+      "source_sha256": "7f41aa28c52adaf238963a4d216d6871e6c61fba57efccb786e2630c94c4056e",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/qualidade_perguntas.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 6321,
+      "sha256": "ef13530048313153eebb1d7fe0721150c90c38e48dd30e34fbf2ffcee3e70811",
+      "source_path": "docs/avaliacao_acuracia/qualidade_perguntas.md",
+      "source_sha256": "ef13530048313153eebb1d7fe0721150c90c38e48dd30e34fbf2ffcee3e70811",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/qualidade_respostas.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 6846,
+      "sha256": "904f9adba68e55e1993eeee0d7bd7704b91b70080aacf1c51972235d00f3011d",
+      "source_path": "docs/avaliacao_acuracia/qualidade_respostas.md",
+      "source_sha256": "055a1c5b6bb5b31a76dabdfa5fe0b66bae9c843c4d82b2d206c1782f383328d5",
+      "changes": [
+        "Links e orientacoes adaptados para a pasta unica experimentos."
+      ]
+    },
+    {
+      "path": "docs/avaliacao_acuracia/referencia_perguntas_12_65_68.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 5413,
+      "sha256": "44b67bce9fdbef6a189d94217dfa78f04cdde9994aa28169e9f610c0944ca1fc",
+      "source_path": "docs/avaliacao_acuracia/referencia_perguntas_12_65_68.md",
+      "source_sha256": "44b67bce9fdbef6a189d94217dfa78f04cdde9994aa28169e9f610c0944ca1fc",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/referencias_68_v3.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 37660,
+      "sha256": "424645a3e3498c15283cdc9673b7d75b6fdfb7981f0775bceca64920227ad8a0",
+      "source_path": "docs/avaliacao_acuracia/referencias_68_v3.md",
+      "source_sha256": "424645a3e3498c15283cdc9673b7d75b6fdfb7981f0775bceca64920227ad8a0",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/referencias_68_v4.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 36914,
+      "sha256": "706c9c4b395334aa6e173481087b74532fa865761525a27906438d6baa9412cc",
+      "source_path": "docs/avaliacao_acuracia/referencias_68_v4.md",
+      "source_sha256": "706c9c4b395334aa6e173481087b74532fa865761525a27906438d6baa9412cc",
+      "changes": []
+    },
+    {
+      "path": "docs/avaliacao_acuracia/revisao_tecnica_referencias_68_v3.md",
+      "role": "Catalogos, conferencias, rubricas ou guias necessarios para entender ou reproduzir as avaliacoes.",
+      "bytes": 81741,
+      "sha256": "c0204ddfc96f0aba1d1ca7fc5c972bc97422c6bbe95e5e8c9d6913f1bac3af3f",
+      "source_path": "docs/avaliacao_acuracia/revisao_tecnica_referencias_68_v3.md",
+      "source_sha256": "81c3593f9471b0b6e7119e103cee92944212d5d8fb3104281a4c87fba46c318c",
+      "changes": [
+        "Links e orientacoes adaptados para a pasta unica experimentos."
+      ]
+    },
+    {
+      "path": "acuracia_qwen_catalogo_v5_r1.json",
+      "role": "Rodadas completas do catalogo atual: r2 sustenta as tabelas; r1 preserva a outra rodada do mesmo catalogo.",
+      "bytes": 782022,
+      "sha256": "a3c39f1abcfd0a2a8b560415f2d51700efb5eddf2226128ca400878b02543647",
+      "source_path": "experimentos/acuracia_qwen_catalogo_v5_r1.json",
+      "source_sha256": "a3c39f1abcfd0a2a8b560415f2d51700efb5eddf2226128ca400878b02543647",
+      "changes": []
+    },
+    {
+      "path": "acuracia_qwen_catalogo_v5_r2.json",
+      "role": "Rodadas completas do catalogo atual: r2 sustenta as tabelas; r1 preserva a outra rodada do mesmo catalogo.",
+      "bytes": 4554426,
+      "sha256": "404270527de76209c785c80ad0f583091efce6590725b164829c0f0d28d8dc2f",
+      "source_path": "experimentos/acuracia_qwen_catalogo_v5_r2.json",
+      "source_sha256": "404270527de76209c785c80ad0f583091efce6590725b164829c0f0d28d8dc2f",
+      "changes": []
+    },
+    {
+      "path": "comparacao_referencia_v5_1.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 2932,
+      "sha256": "1e28c755b5cf1bcd1c688049cd3eceb0d62daeb7e5b3ddb1c3b911f856169874",
+      "source_path": "experimentos/comparacao_referencia_v5_1.json",
+      "source_sha256": "1e28c755b5cf1bcd1c688049cd3eceb0d62daeb7e5b3ddb1c3b911f856169874",
+      "changes": []
+    },
+    {
+      "path": "comparacao_referencia_v5_1.md",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 1381,
+      "sha256": "bcfe104e0bc13b34910847e5f1a13037fa2870187fbb03a5ef3b857333b5cb05",
+      "source_path": "experimentos/comparacao_referencia_v5_1.md",
+      "source_sha256": "bcfe104e0bc13b34910847e5f1a13037fa2870187fbb03a5ef3b857333b5cb05",
+      "changes": []
+    },
+    {
+      "path": "comparacao_referencia_v6.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 2974,
+      "sha256": "9556037d6602bf5819e6aeca6d379b94593e99dbf58c1830b1558e97a093a55c",
+      "source_path": "experimentos/comparacao_referencia_v6.json",
+      "source_sha256": "9556037d6602bf5819e6aeca6d379b94593e99dbf58c1830b1558e97a093a55c",
+      "changes": []
+    },
+    {
+      "path": "comparacao_referencia_v6.md",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 1423,
+      "sha256": "c8a02b44c5b6bd4da9789c7bcdbf472487acf07590f3ae3c95fe693c2be32628",
+      "source_path": "experimentos/comparacao_referencia_v6.md",
+      "source_sha256": "c8a02b44c5b6bd4da9789c7bcdbf472487acf07590f3ae3c95fe693c2be32628",
+      "changes": []
+    },
+    {
+      "path": "diagnostico_isolado_llama_v1.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 22651,
+      "sha256": "6f3f240415f3ffbb2b9ec311e8a447527f364960580d563e4ea1f4bae1bff5b9",
+      "source_path": "experimentos/diagnostico_isolado_llama_v1.json",
+      "source_sha256": "6f3f240415f3ffbb2b9ec311e8a447527f364960580d563e4ea1f4bae1bff5b9",
+      "changes": []
+    },
+    {
+      "path": "diagnostico_isolado_llama_v1.md",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 4394,
+      "sha256": "e65a0dcb31acd5990fe24394b117b18498e1cd856f97bd154ad87a9d793f41b6",
+      "source_path": "experimentos/diagnostico_isolado_llama_v1.md",
+      "source_sha256": "e65a0dcb31acd5990fe24394b117b18498e1cd856f97bd154ad87a9d793f41b6",
+      "changes": []
+    },
+    {
+      "path": "diagnostico_isolado_qwen_v1.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 22859,
+      "sha256": "fc72ea0756a252b1f1d43e170836a4a5a5d1f9441fd46b732dcdbcdc427c3445",
+      "source_path": "experimentos/diagnostico_isolado_qwen_v1.json",
+      "source_sha256": "fc72ea0756a252b1f1d43e170836a4a5a5d1f9441fd46b732dcdbcdc427c3445",
+      "changes": []
+    },
+    {
+      "path": "diagnostico_isolado_qwen_v1.md",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 4363,
+      "sha256": "7d1870ed13feb1eb3d991bf4bd3ca93a54044aeb10cf940a45cc3cd5b609c9d3",
+      "source_path": "experimentos/diagnostico_isolado_qwen_v1.md",
+      "source_sha256": "7d1870ed13feb1eb3d991bf4bd3ca93a54044aeb10cf940a45cc3cd5b609c9d3",
+      "changes": []
+    },
+    {
+      "path": "diagnostico_mapeamento_v5_1.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 9417,
+      "sha256": "404cf83d3ce663201925fd62fb4ee169e873bcfebf6faa6f0395c36bc289fe3c",
+      "source_path": "experimentos/diagnostico_mapeamento_v5_1.json",
+      "source_sha256": "404cf83d3ce663201925fd62fb4ee169e873bcfebf6faa6f0395c36bc289fe3c",
+      "changes": []
+    },
+    {
+      "path": "parecer_qualidade_respostas_v5_r2.md",
+      "role": "Julgamentos, evidencias, consolidacao e ficha para documentar a revisao posterior do autor.",
+      "bytes": 5820,
+      "sha256": "86e3d6a6f4e114b4229905a2f620408bd88f042b0b88c090bc1b3da872a63f50",
+      "source_path": "experimentos/parecer_qualidade_respostas_v5_r2.md",
+      "source_sha256": "86e3d6a6f4e114b4229905a2f620408bd88f042b0b88c090bc1b3da872a63f50",
+      "changes": []
+    },
+    {
+      "path": "qualidade_perguntas_v4_avaliador_v4.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 178934,
+      "sha256": "444d0fe2d83b43389e333c9236ccc742fe9d6f5be310e3cf42af2b72e0372c20",
+      "source_path": "experimentos/qualidade_perguntas_v4_avaliador_v4.json",
+      "source_sha256": "444d0fe2d83b43389e333c9236ccc742fe9d6f5be310e3cf42af2b72e0372c20",
+      "changes": []
+    },
+    {
+      "path": "qualidade_perguntas_v4_avaliador_v5.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 168566,
+      "sha256": "f35941cc5710593010d96993d481aa3b15d2cecd2800a41c4b8eeaf605ae909c",
+      "source_path": "experimentos/qualidade_perguntas_v4_avaliador_v5.json",
+      "source_sha256": "f35941cc5710593010d96993d481aa3b15d2cecd2800a41c4b8eeaf605ae909c",
+      "changes": []
+    },
+    {
+      "path": "qualidade_perguntas_v4_avaliador_v5_1.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 176657,
+      "sha256": "f09da268c9f82e3c01a5de7f121e5271b57a0ed20eab8f54486fbf9b101bb741",
+      "source_path": "experimentos/qualidade_perguntas_v4_avaliador_v5_1.json",
+      "source_sha256": "f09da268c9f82e3c01a5de7f121e5271b57a0ed20eab8f54486fbf9b101bb741",
+      "changes": []
+    },
+    {
+      "path": "qualidade_perguntas_v4_avaliador_v5_llama_piloto.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 141442,
+      "sha256": "e167a2c5153c7fe062e2452ab4686d42e5742e7476149c38a8351445e20c31f6",
+      "source_path": "experimentos/qualidade_perguntas_v4_avaliador_v5_llama_piloto.json",
+      "source_sha256": "e167a2c5153c7fe062e2452ab4686d42e5742e7476149c38a8351445e20c31f6",
+      "changes": []
+    },
+    {
+      "path": "qualidade_perguntas_v4_avaliador_v6.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 177695,
+      "sha256": "873348f4c13f241b05a198a39c73b69de200d0d4cf98409322e72bdd5bcbf67c",
+      "source_path": "experimentos/qualidade_perguntas_v4_avaliador_v6.json",
+      "source_sha256": "873348f4c13f241b05a198a39c73b69de200d0d4cf98409322e72bdd5bcbf67c",
+      "changes": []
+    },
+    {
+      "path": "qualidade_perguntas_v4_avaliador_v6.md",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 50295,
+      "sha256": "9a4b54c376a5af63562af9cc36bdc459134cfde92837e9544fba881da244175a",
+      "source_path": "experimentos/qualidade_perguntas_v4_avaliador_v6.md",
+      "source_sha256": "9a4b54c376a5af63562af9cc36bdc459134cfde92837e9544fba881da244175a",
+      "changes": []
+    },
+    {
+      "path": "qualidade_respostas_v5_r2.evidencia_metadados.json",
+      "role": "Julgamentos, evidencias, consolidacao e ficha para documentar a revisao posterior do autor.",
+      "bytes": 510,
+      "sha256": "9e881788aedd39e6b14fd859bf97d55c48b96d236c4ddf1d422bd0f86300159a",
+      "source_path": "experimentos/qualidade_respostas_v5_r2.evidencia_metadados.json",
+      "source_sha256": "9e881788aedd39e6b14fd859bf97d55c48b96d236c4ddf1d422bd0f86300159a",
+      "changes": []
+    },
+    {
+      "path": "qualidade_respostas_v5_r2.json",
+      "role": "Relatorio automatico anterior a revisao, citado pelo parecer preservado; mantido para rastreabilidade da origem dos julgamentos.",
+      "bytes": 298800,
+      "sha256": "9eeb101a5bde10d9099a2ef241ddd70935cf85a4a5c577efdd74c4620ffb2920",
+      "source_path": "experimentos/qualidade_respostas_v5_r2.json",
+      "source_sha256": "9eeb101a5bde10d9099a2ef241ddd70935cf85a4a5c577efdd74c4620ffb2920",
+      "changes": []
+    },
+    {
+      "path": "qualidade_respostas_v5_r2.md",
+      "role": "Relatorio automatico anterior a revisao, citado pelo parecer preservado; mantido para rastreabilidade da origem dos julgamentos.",
+      "bytes": 165784,
+      "sha256": "21e0b4c1079e206c4d57050546b92c3ca77827c08839829a5c6e18de9f77b46b",
+      "source_path": "experimentos/qualidade_respostas_v5_r2.md",
+      "source_sha256": "21e0b4c1079e206c4d57050546b92c3ca77827c08839829a5c6e18de9f77b46b",
+      "changes": []
+    },
+    {
+      "path": "qualidade_respostas_v5_r2.review.json",
+      "role": "Julgamentos, evidencias, consolidacao e ficha para documentar a revisao posterior do autor.",
+      "bytes": 76028,
+      "sha256": "3abaed1deb101329046e97a6cb4cb27f97aa0ac8b7011d3349d8e88ecc07316f",
+      "source_path": "experimentos/qualidade_respostas_v5_r2.review.json",
+      "source_sha256": "3abaed1deb101329046e97a6cb4cb27f97aa0ac8b7011d3349d8e88ecc07316f",
+      "changes": []
+    },
+    {
+      "path": "qualidade_respostas_v5_r2.revisao_ia.json",
+      "role": "Julgamentos, evidencias, consolidacao e ficha para documentar a revisao posterior do autor.",
+      "bytes": 181317,
+      "sha256": "c338d7dd774565b6fd22bb44a0fbb81988a9f48a4386402dd24d80ff9ceabfe7",
+      "source_path": "experimentos/qualidade_respostas_v5_r2.revisao_ia.json",
+      "source_sha256": "c338d7dd774565b6fd22bb44a0fbb81988a9f48a4386402dd24d80ff9ceabfe7",
+      "changes": []
+    },
+    {
+      "path": "qualidade_respostas_v5_r2_revisada_ia.json",
+      "role": "Julgamentos, evidencias, consolidacao e ficha para documentar a revisao posterior do autor.",
+      "bytes": 390115,
+      "sha256": "089cea46fe27c69ea42d0b9cac8d3f911e59b2a71194b135607491f35cf7cc67",
+      "source_path": "experimentos/qualidade_respostas_v5_r2_revisada_ia.json",
+      "source_sha256": "089cea46fe27c69ea42d0b9cac8d3f911e59b2a71194b135607491f35cf7cc67",
+      "changes": []
+    },
+    {
+      "path": "qualidade_respostas_v5_r2_revisada_ia.md",
+      "role": "Julgamentos, evidencias, consolidacao e ficha para documentar a revisao posterior do autor.",
+      "bytes": 219754,
+      "sha256": "abf96a4f027a930b45803e79493de09167121a6b953f01fffe205ae0c9b51a37",
+      "source_path": "experimentos/qualidade_respostas_v5_r2_revisada_ia.md",
+      "source_sha256": "abf96a4f027a930b45803e79493de09167121a6b953f01fffe205ae0c9b51a37",
+      "changes": []
+    },
+    {
+      "path": "referencias_68_catalogo_v3.json",
+      "role": "Entrada da conferencia de referencias relatada no capitulo 4.",
+      "bytes": 3617671,
+      "sha256": "f57988c487e893cb5b6aae45cdcafc2bee9a6e4130bdd0f66114a2fab09d4661",
+      "source_path": "experimentos/referencias_68_catalogo_v3.json",
+      "source_sha256": "f57988c487e893cb5b6aae45cdcafc2bee9a6e4130bdd0f66114a2fab09d4661",
+      "changes": []
+    },
+    {
+      "path": "referencias_68_catalogo_v5.json",
+      "role": "Rodadas completas do catalogo atual: r2 sustenta as tabelas; r1 preserva a outra rodada do mesmo catalogo.",
+      "bytes": 3678404,
+      "sha256": "be35bfd5b8d52b384fb6139dc25e512925b7e67972b7f1aeda9b17104539464f",
+      "source_path": "experimentos/referencias_68_catalogo_v5.json",
+      "source_sha256": "be35bfd5b8d52b384fb6139dc25e512925b7e67972b7f1aeda9b17104539464f",
+      "changes": []
+    },
+    {
+      "path": "resumo_diagnostico_isolado_v1.json",
+      "role": "Diagnosticos exploratorios e dependencias dos pareceres de qualidade das perguntas; nao certificam as 68 perguntas.",
+      "bytes": 5830,
+      "sha256": "bdf7fd87ae92b3e18c3d41333ac5ff9742924ce8849e9cecd3f81eb9d02f610f",
+      "source_path": "experimentos/resumo_diagnostico_isolado_v1.json",
+      "source_sha256": "bdf7fd87ae92b3e18c3d41333ac5ff9742924ce8849e9cecd3f81eb9d02f610f",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_deepseek_v1.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 247531,
+      "sha256": "9a7af9ca7503f417f5df20b4a4f1d3517c1a2e4236a3193e027f41da9d2cf00e",
+      "source_path": "experimentos/test_results_68_questoes_deepseek_v1.json",
+      "source_sha256": "9a7af9ca7503f417f5df20b4a4f1d3517c1a2e4236a3193e027f41da9d2cf00e",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_deepseek_v2.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 247550,
+      "sha256": "059873920e53fa0a2acbcf8d04c8471e6298495f5dbb8989d07fa14c1dfe4dbe",
+      "source_path": "experimentos/test_results_68_questoes_deepseek_v2.json",
+      "source_sha256": "059873920e53fa0a2acbcf8d04c8471e6298495f5dbb8989d07fa14c1dfe4dbe",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_deepseek_v3.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 247451,
+      "sha256": "301cd02df364cff79b91782bb1c3ee6e25fb0db5ae8923fa9bd6f45db7416698",
+      "source_path": "experimentos/test_results_68_questoes_deepseek_v3.json",
+      "source_sha256": "301cd02df364cff79b91782bb1c3ee6e25fb0db5ae8923fa9bd6f45db7416698",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_llama_v1.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 238217,
+      "sha256": "cfec87b8a101706c10e2c7cccdf6a87f1a6b806518e1591258a3d4ad567a1668",
+      "source_path": "experimentos/test_results_68_questoes_llama_v1.json",
+      "source_sha256": "cfec87b8a101706c10e2c7cccdf6a87f1a6b806518e1591258a3d4ad567a1668",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_llama_v2.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 238081,
+      "sha256": "d7b367f35ac38714eb5964bb437b756a1872e1071513a83bca54d64ef095a856",
+      "source_path": "experimentos/test_results_68_questoes_llama_v2.json",
+      "source_sha256": "d7b367f35ac38714eb5964bb437b756a1872e1071513a83bca54d64ef095a856",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_llama_v3.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 238064,
+      "sha256": "206b6793f04e59be722d54aed7e6ea6260dad6cb7f1f26db581f501d24c786d5",
+      "source_path": "experimentos/test_results_68_questoes_llama_v3.json",
+      "source_sha256": "206b6793f04e59be722d54aed7e6ea6260dad6cb7f1f26db581f501d24c786d5",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_qwen_v1.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 240667,
+      "sha256": "43ef4ebf9dda95b097bca28cb15998d53f28afdd828dd41b307a4f8bb3feb1e5",
+      "source_path": "experimentos/test_results_68_questoes_qwen_v1.json",
+      "source_sha256": "43ef4ebf9dda95b097bca28cb15998d53f28afdd828dd41b307a4f8bb3feb1e5",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_qwen_v2.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 240518,
+      "sha256": "de81f4f2fbb87ae120e8a3fd0695bbc26e520addd2c8943dfa2558cb0c1b64d0",
+      "source_path": "experimentos/test_results_68_questoes_qwen_v2.json",
+      "source_sha256": "de81f4f2fbb87ae120e8a3fd0695bbc26e520addd2c8943dfa2558cb0c1b64d0",
+      "changes": []
+    },
+    {
+      "path": "test_results_68_questoes_qwen_v3.json",
+      "role": "Nove execucoes operacionais da dissertacao e do artigo.",
+      "bytes": 240709,
+      "sha256": "24569c6e7e4d0ae378050a0d93a061634330d3ff1e98af869fc5f323e67269f1",
+      "source_path": "experimentos/test_results_68_questoes_qwen_v3.json",
+      "source_sha256": "24569c6e7e4d0ae378050a0d93a061634330d3ff1e98af869fc5f323e67269f1",
+      "changes": []
+    },
+    {
+      "path": "docs/PERGUNTAS_SEIDIG_68.md",
+      "role": "Enunciados originais do benchmark operacional e entrada do gerador de catalogo.",
+      "bytes": 24097,
+      "sha256": "82b2e9b789f1c1a89b1d990d9ddc777846cdf98280ae9fb7cdcb0e6448903875",
+      "source_path": "docs/PERGUNTAS_SEIDIG_68.md",
+      "source_sha256": "82b2e9b789f1c1a89b1d990d9ddc777846cdf98280ae9fb7cdcb0e6448903875",
+      "changes": []
+    },
+    {
+      "path": "README.md",
+      "role": "Indice das evidencias preservadas.",
+      "bytes": 6985,
+      "sha256": "5f52b38203b8c666fcdaa6e5a5a2a258bbc8088ca8e521fbbd418cbcc183a52e",
+      "source_path": "experimentos/README.md",
+      "source_sha256": "32e4542bbd39834913931e210eeb99c7a3dced63f679b74010ae25706104c38a",
+      "changes": [
+        "Links e orientacoes de recuperacao local substituidos por referencias ao pacote publicavel.",
+        "Links e orientacoes adaptados para a pasta unica experimentos."
+      ]
+    }
+  ],
+  "exclusions": [
+    "CSV de dados brutos",
+    "arquivos .env e configuracoes locais",
+    "checkpoints parciais e materiais deprecated",
+    "backup e manifesto da limpeza local",
+    "PDFs de terceiros e fontes completas da dissertacao/artigo"
+  ]
+}

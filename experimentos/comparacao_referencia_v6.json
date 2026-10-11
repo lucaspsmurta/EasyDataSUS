@@ -1,0 +1,120 @@
+{
+  "reference_kind": "ai_assisted",
+  "reference_status": "provisional_requires_human_review",
+  "report_sha256": "577619932e5f7cb9244626c229b4009b0e6eec72de1ca348c0da6f387a57759a",
+  "reference_sha256": "4167da427a4424a40866af9070076526ad9fcf677686c639071079dc9a533bc6",
+  "total": 15,
+  "evaluated": 14,
+  "pending": 1,
+  "agreements": 6,
+  "disagreements": 8,
+  "coverage": 0.9333333333333333,
+  "agreement_among_evaluated": 0.42857142857142855,
+  "rows": [
+    {
+      "id": 12,
+      "dimension": "context_completeness",
+      "reference": "pass",
+      "observed": "partial",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 12,
+      "dimension": "analytical_specificity",
+      "reference": "pass",
+      "observed": "pass",
+      "outcome": "agreement"
+    },
+    {
+      "id": 12,
+      "dimension": "unambiguity",
+      "reference": "pass",
+      "observed": "pass",
+      "outcome": "agreement"
+    },
+    {
+      "id": 12,
+      "dimension": "data_availability",
+      "reference": "pass",
+      "observed": "not_assessable",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 12,
+      "dimension": "implementation_support",
+      "reference": "pass",
+      "observed": "not_assessable",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 65,
+      "dimension": "context_completeness",
+      "reference": "partial",
+      "observed": "partial",
+      "outcome": "agreement"
+    },
+    {
+      "id": 65,
+      "dimension": "analytical_specificity",
+      "reference": "partial",
+      "observed": "pass",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 65,
+      "dimension": "unambiguity",
+      "reference": "fail",
+      "observed": "pass",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 65,
+      "dimension": "data_availability",
+      "reference": "pass",
+      "observed": "not_assessable",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 65,
+      "dimension": "implementation_support",
+      "reference": "partial",
+      "observed": "not_assessable",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 68,
+      "dimension": "context_completeness",
+      "reference": "partial",
+      "observed": "partial",
+      "outcome": "agreement"
+    },
+    {
+      "id": 68,
+      "dimension": "analytical_specificity",
+      "reference": "partial",
+      "observed": "partial",
+      "outcome": "agreement"
+    },
+    {
+      "id": 68,
+      "dimension": "unambiguity",
+      "reference": "fail",
+      "observed": "partial",
+      "outcome": "disagreement"
+    },
+    {
+      "id": 68,
+      "dimension": "data_availability",
+      "reference": "pass",
+      "observed": "pending",
+      "outcome": "pending"
+    },
+    {
+      "id": 68,
+      "dimension": "implementation_support",
+      "reference": "partial",
+      "observed": "partial",
+      "outcome": "agreement"
+    }
+  ]
+}

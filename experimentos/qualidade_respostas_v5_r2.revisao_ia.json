@@ -1,0 +1,3544 @@
+{
+  "results_sha256": "404270527de76209c785c80ad0f583091efce6590725b164829c0f0d28d8dc2f",
+  "reference_sha256": "7ee8263f8e091a960371f70bcede855db6f2e9f2b414d31190e7e42065ccc6b1",
+  "review_kind": "ai_assisted",
+  "scope": "Inspeção de 56 respostas finais, sete dimensões por resposta; não é revisão humana independente.",
+  "conventions": [
+    "Informação principal refere-se ao conteúdo da tabela no snapshot; fidelidade inspeciona insight e factual_summary separadamente do acerto da consulta.",
+    "Filtros e agregação são inspecionados no SQL, mesmo quando os valores coincidem. Filtros inferidos logicamente pela junção são aceitos (Q62).",
+    "Completude inclui regras explícitas de grupos ausentes; Q6/Q7 recebem parcial por não garantir essas regras apesar de acertarem neste snapshot.",
+    "Formato considera nomes de colunas explicitamente pedidos; aliases diferentes geram parcial e tipos/identificadores incompatíveis geram fail.",
+    "Resumo de destaques não precisa repetir toda a tabela; não pode contradizer valores, unidades ou inventar interpretações.",
+    "As referências são candidatas em rascunho. Não foram executadas novas consultas nem inferência Ollama. As oito falhas técnicas não são julgadas como respostas finais; quatro limitações previstas permanecem em dimensão própria."
+  ],
+  "ratings": [
+    {
+      "id": 1,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Não há filtro de linha a aplicar além do escopo integral da base; o SQL não acrescenta recortes. Avaliado como atendimento ao escopo, não como dimensão não aplicável. Fonte: results[id=1].response e cases[id=1] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 1,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT(*) conta registros de aplicação; não deduplica pessoas. Fonte: results[id=1].response e cases[id=1] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 1,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=1].response e cases[id=1] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 1,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=1].response e cases[id=1] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 1,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=1].response e cases[id=1] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 1,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=1].response e cases[id=1] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 1,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=1].response e cases[id=1] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 3,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "WHERE vacina_descricao_dose = '2ª Dose' preserva a igualdade exata. Fonte: results[id=3].response e cases[id=3] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 3,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT(*) nas linhas elegíveis equivale ao countIf da referência. Fonte: results[id=3].response e cases[id=3] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 3,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=3].response e cases[id=3] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 3,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=3].response e cases[id=3] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 3,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=3].response e cases[id=3] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 3,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=3].response e cases[id=3] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 3,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=3].response e cases[id=3] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 4,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Exclui UF vazia/nula, sem excluir linhas de outras doses que mantêm UFs com diferenças zero. Fonte: results[id=4].response e cases[id=4] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 4,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "Conta por UF/dose e subtrai primeira menos segunda dose, mantendo todos os grupos. Fonte: results[id=4].response e cases[id=4] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 4,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'diferenca'] representa as entidades e medidas solicitadas. Fonte: results[id=4].response e cases[id=4] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 4,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 28 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=4].response e cases[id=4] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 4,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (28 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=4].response e cases[id=4] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 4,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'diferenca'], na ordem solicitada ['uf', 'diferenca']; representação compatível com o protocolo. Fonte: results[id=4].response e cases[id=4] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 4,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=4].response e cases[id=4] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 5,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Seleciona reforço com positionCaseInsensitiveUTF8 e primeira dose com igualdade exata. Fonte: results[id=5].response e cases[id=5] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 5,
+      "dimension": "aggregation",
+      "status": "fail",
+      "evidence": "Divisão invertida: primeira_dose/reforco; pedido e referência exigem reforco/primeira_dose. Fonte: results[id=5].response e cases[id=5] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 5,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['razao'] representa as entidades e medidas solicitadas. Fonte: results[id=5].response e cases[id=5] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 5,
+      "dimension": "main_information",
+      "status": "fail",
+      "evidence": "Retornou 1.5105337078651686; a razão solicitada e esperada é 0.6620176662017666. Numerador e denominador foram invertidos. Fonte: results[id=5].response e cases[id=5] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 5,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=5].response e cases[id=5] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 5,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['razao'], na ordem solicitada ['razao']; representação compatível com o protocolo. Fonte: results[id=5].response e cases[id=5] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 5,
+      "dimension": "text_fidelity",
+      "status": "fail",
+      "evidence": "O texto chama 1,510534 de reforços por primeira dose, mas o SQL calcula primeira dose por reforço. O resumo factual ainda reduz a precisão para 1,51; a explicação inverte o significado da razão. Fonte: results[id=5].response e cases[id=5] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 6,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Restringe F e M antes de calcular o denominador compartilhado. Fonte: results[id=6].response e cases[id=6] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 6,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT por sexo e SUM(total) OVER() produzem percentuais de F/M, com NULLIF para zero. Fonte: results[id=6].response e cases[id=6] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 6,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['sexo', 'percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=6].response e cases[id=6] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 6,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 2 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=6].response e cases[id=6] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 6,
+      "dimension": "completeness",
+      "status": "partial",
+      "evidence": "No snapshot retornou F e M corretamente. Contudo, agrupa só categorias existentes: se uma faltar ou a base estiver vazia, não garante as duas categorias e seus nulos exigidos pelo enunciado. Fonte: results[id=6].response e cases[id=6] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 6,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['sexo', 'percentual'], na ordem solicitada ['sexo', 'percentual']; representação compatível com o protocolo. Fonte: results[id=6].response e cases[id=6] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 6,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=6].response e cases[id=6] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 7,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Cada ramo restringe a faixa, excluindo idades nulas/negativas. Fonte: results[id=7].response e cases[id=7] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 7,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT por três faixas e MIN(total); porém UNION de agregados escalares cria faixas de contagem zero mesmo quando ausentes. Fonte: results[id=7].response e cases[id=7] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 7,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['faixa', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=7].response e cases[id=7] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 7,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=7].response e cases[id=7] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 7,
+      "dimension": "completeness",
+      "status": "partial",
+      "evidence": "A faixa mínima retornada está correta neste snapshot. Porém o UNION ALL constrói sempre três agregados, incluindo faixas de contagem zero, contrariando a exclusão explícita de faixas ausentes. Fonte: results[id=7].response e cases[id=7] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 7,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['faixa', 'total'], na ordem solicitada ['faixa', 'total']; representação compatível com o protocolo. Fonte: results[id=7].response e cases[id=7] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 7,
+      "dimension": "text_fidelity",
+      "status": "partial",
+      "evidence": "A tabela contém o mínimo solicitado (60+, 53.986), mas o resumo diz “maior total”. Embora seja o máximo do resultado unitário, não comunica o mínimo entre as faixas e induz leitura equivocada. Fonte: results[id=7].response e cases[id=7] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 8,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "Filtra paciente_endereco_nmMunicipio; deveria excluir código paciente_endereco_coIbgeMunicipio ausente, além de UF ausente. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=8].response e cases[id=8] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 8,
+      "dimension": "aggregation",
+      "status": "partial",
+      "evidence": "COUNT e máximo empatado estão presentes, mas o agrupamento usa nome municipal em vez do código IBGE; nomes homônimos podem unir entidades diferentes. Fonte: results[id=8].response e cases[id=8] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 8,
+      "dimension": "identification",
+      "status": "fail",
+      "evidence": "Retorna RIO BRANCO em municipio; a pergunta pede o código IBGE e a referência retorna 120040. Nome não substitui o identificador solicitado. Fonte: results[id=8].response e cases[id=8] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 8,
+      "dimension": "main_information",
+      "status": "partial",
+      "evidence": "Contagem 187.760 e UF AC coincidem, mas o identificador municipal pedido não foi fornecido. A revisão não presume equivalência nome/código para outros registros. Fonte: results[id=8].response e cases[id=8] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 8,
+      "dimension": "completeness",
+      "status": "partial",
+      "evidence": "Seleciona máximo com empates e retorna UF/contagem, mas falta o código municipal solicitado e a chave de agrupamento foi trocada. Fonte: results[id=8].response e cases[id=8] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 8,
+      "dimension": "output_contract",
+      "status": "fail",
+      "evidence": "Há três colunas na ordem pedida, porém municipio contém nome em vez de código IBGE: mesma largura não satisfaz o contrato. Fonte: results[id=8].response e cases[id=8] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 8,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=8].response e cases[id=8] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 9,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "WHERE idade >= 0 exclui negativos/nulos e UF <> vazio exclui UF vazia/nula. Fonte: results[id=9].response e cases[id=9] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 9,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "CASE forma faixas 0-18,19-59,60+; COUNT por UF/faixa e todos os grupos. Fonte: results[id=9].response e cases[id=9] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 9,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'faixa', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=9].response e cases[id=9] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 9,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 83 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=9].response e cases[id=9] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 9,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (83 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=9].response e cases[id=9] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 9,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'faixa', 'total'], na ordem solicitada ['uf', 'faixa', 'total']; representação compatível com o protocolo. Fonte: results[id=9].response e cases[id=9] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 9,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=9].response e cases[id=9] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 10,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Não há filtro de linha a aplicar além do escopo integral da base; o SQL não acrescenta recortes. Avaliado como atendimento ao escopo, não como dimensão não aplicável. Fonte: results[id=10].response e cases[id=10] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 10,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "GROUP BY sistema_origem e COUNT de linhas preservam todos os grupos. Fonte: results[id=10].response e cases[id=10] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 10,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['sistema_origem', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=10].response e cases[id=10] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 10,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 5 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=10].response e cases[id=10] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 10,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (5 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=10].response e cases[id=10] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 10,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['sistema_origem', 'total'], na ordem solicitada ['sistema_origem', 'total']; representação compatível com o protocolo. Fonte: results[id=10].response e cases[id=10] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 10,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=10].response e cases[id=10] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 12,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Exclui fabricante nulo/vazio, sem normalizar nomes indevidamente. Fonte: results[id=12].response e cases[id=12] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 12,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT por fabricante e igualdade com MAX(total) incluem todos os extremos empatados. Fonte: results[id=12].response e cases[id=12] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 12,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['fabricante', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=12].response e cases[id=12] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 12,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=12].response e cases[id=12] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 12,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=12].response e cases[id=12] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 12,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['fabricante', 'total'], na ordem solicitada ['fabricante', 'total']; representação compatível com o protocolo. Fonte: results[id=12].response e cases[id=12] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 12,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=12].response e cases[id=12] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 13,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Exclui vacina_dataAplicacao nula, sem outro recorte. Fonte: results[id=13].response e cases[id=13] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 13,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "formatDateTime %Y-%m distingue anos; COUNT por mês, sem LIMIT. Fonte: results[id=13].response e cases[id=13] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 13,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['mes', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=13].response e cases[id=13] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 13,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 45 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=13].response e cases[id=13] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 13,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (45 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=13].response e cases[id=13] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 13,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['mes', 'total'], na ordem solicitada ['mes', 'total']; representação compatível com o protocolo. Fonte: results[id=13].response e cases[id=13] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 13,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=13].response e cases[id=13] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 14,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Exclui UF vazia/nula e data nula. Fonte: results[id=14].response e cases[id=14] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 14,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT por UF/mês AAAA-MM; igualdade com MAX(total) seleciona empates. Fonte: results[id=14].response e cases[id=14] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 14,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'mes', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=14].response e cases[id=14] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 14,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=14].response e cases[id=14] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 14,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=14].response e cases[id=14] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 14,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'mes', 'total'], na ordem solicitada ['uf', 'mes', 'total']; representação compatível com o protocolo. Fonte: results[id=14].response e cases[id=14] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 14,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=14].response e cases[id=14] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 15,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Busca reforço sem distinguir caixa e mantém descrição original. Fonte: results[id=15].response e cases[id=15] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 15,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "GROUP BY descrição e COUNT(*) preservam todas as descrições encontradas. Fonte: results[id=15].response e cases[id=15] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 15,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['dose', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=15].response e cases[id=15] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 15,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 4 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=15].response e cases[id=15] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 15,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (4 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=15].response e cases[id=15] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 15,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['dose', 'total'], na ordem solicitada ['dose', 'total']; representação compatível com o protocolo. Fonte: results[id=15].response e cases[id=15] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 15,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=15].response e cases[id=15] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 16,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "WHERE cnes > 0 é explícito. Fonte: results[id=16].response e cases[id=16] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 16,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT(DISTINCT cnes) conta UBS distintas, não linhas. Fonte: results[id=16].response e cases[id=16] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 16,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=16].response e cases[id=16] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 16,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=16].response e cases[id=16] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 16,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=16].response e cases[id=16] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 16,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=16].response e cases[id=16] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 16,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=16].response e cases[id=16] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 17,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "Exclui UF nula/texto vazio com toString, mas omite cnes > 0. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=17].response e cases[id=17] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 17,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT(DISTINCT cnes) por UF é a operação pedida; omissão de elegibilidade é registrada em filtros. Fonte: results[id=17].response e cases[id=17] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 17,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=17].response e cases[id=17] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 17,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 27 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=17].response e cases[id=17] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 17,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (27 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=17].response e cases[id=17] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 17,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'total'], na ordem solicitada ['uf', 'total']; representação compatível com o protocolo. Fonte: results[id=17].response e cases[id=17] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 17,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=17].response e cases[id=17] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 18,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "cnes > 0 e UF textual não vazia/nula estão presentes. Fonte: results[id=18].response e cases[id=18] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 18,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT por UF; seleciona total = MAX(total), preservando empates. Fonte: results[id=18].response e cases[id=18] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 18,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=18].response e cases[id=18] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 18,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=18].response e cases[id=18] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 18,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=18].response e cases[id=18] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 18,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'total'], na ordem solicitada ['uf', 'total']; representação compatível com o protocolo. Fonte: results[id=18].response e cases[id=18] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 18,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=18].response e cases[id=18] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 19,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "WHERE cnes > 0 está presente, mas ibge > 0 foi omitido. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=19].response e cases[id=19] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 19,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT(DISTINCT ibge) conta municípios, não CNES. Fonte: results[id=19].response e cases[id=19] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 19,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=19].response e cases[id=19] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 19,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=19].response e cases[id=19] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 19,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=19].response e cases[id=19] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 19,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=19].response e cases[id=19] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.778397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 19,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=19].response e cases[id=19] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 20,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "CNES e IBGE positivos estão explicitamente filtrados. Fonte: results[id=20].response e cases[id=20] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 20,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por IBGE, selecionando MAX(total_ubs) com empates. Fonte: results[id=20].response e cases[id=20] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 20,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['municipio', 'total_ubs'] representa as entidades e medidas solicitadas. Fonte: results[id=20].response e cases[id=20] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 20,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=20].response e cases[id=20] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 20,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=20].response e cases[id=20] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 20,
+      "dimension": "output_contract",
+      "status": "partial",
+      "evidence": "Conteúdo, quantidade e ordem das colunas estão corretos, mas os nomes não seguem literalmente o pedido: recebido ['municipio', 'total_ubs']; solicitado ['municipio', 'total']. A métrica estrita de valores não verifica esses aliases. Fonte: results[id=20].response e cases[id=20] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 20,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=20].response e cases[id=20] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 21,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "CNES e IBGE positivos estão explicitamente filtrados. Fonte: results[id=21].response e cases[id=21] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 21,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por IBGE, selecionando MAX(total_ubs) com empates. Fonte: results[id=21].response e cases[id=21] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 21,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['municipio', 'total_ubs'] representa as entidades e medidas solicitadas. Fonte: results[id=21].response e cases[id=21] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 21,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=21].response e cases[id=21] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 21,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=21].response e cases[id=21] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 21,
+      "dimension": "output_contract",
+      "status": "partial",
+      "evidence": "Conteúdo, quantidade e ordem das colunas estão corretos, mas os nomes não seguem literalmente o pedido: recebido ['municipio', 'total_ubs']; solicitado ['municipio', 'total']. A métrica estrita de valores não verifica esses aliases. Fonte: results[id=21].response e cases[id=21] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 21,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=21].response e cases[id=21] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 22,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "UF IN 21..29 e cnes > 0 presentes; falta ibge > 0. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=22].response e cases[id=22] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 22,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por município, sem limitar linhas. Fonte: results[id=22].response e cases[id=22] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 22,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['municipio', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=22].response e cases[id=22] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 22,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1783 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=22].response e cases[id=22] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 22,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1783 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=22].response e cases[id=22] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 22,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['municipio', 'total'], na ordem solicitada ['municipio', 'total']; representação compatível com o protocolo. Fonte: results[id=22].response e cases[id=22] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 22,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=22].response e cases[id=22] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 23,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "CNES positivo, latitude/longitude não zero e intervalos inclusivos estão na mesma linha. Fonte: results[id=23].response e cases[id=23] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 23,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES após filtros conta uma UBS mesmo com várias linhas elegíveis. Fonte: results[id=23].response e cases[id=23] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 23,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=23].response e cases[id=23] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 23,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=23].response e cases[id=23] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 23,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=23].response e cases[id=23] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 23,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=23].response e cases[id=23] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 23,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=23].response e cases[id=23] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 24,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "CNES positivo e coordenadas válidas presentes; falta ibge > 0. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=24].response e cases[id=24] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 24,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por IBGE e máximo empatado, sem JOIN multiplicador. Fonte: results[id=24].response e cases[id=24] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 24,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['municipio', 'total_ubs'] representa as entidades e medidas solicitadas. Fonte: results[id=24].response e cases[id=24] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 24,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=24].response e cases[id=24] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 24,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=24].response e cases[id=24] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 24,
+      "dimension": "output_contract",
+      "status": "partial",
+      "evidence": "Conteúdo, quantidade e ordem das colunas estão corretos, mas os nomes não seguem literalmente o pedido: recebido ['municipio', 'total_ubs']; solicitado ['municipio', 'total']. A métrica estrita de valores não verifica esses aliases. Fonte: results[id=24].response e cases[id=24] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 24,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=24].response e cases[id=24] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 25,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "Faltam cnes > 0 e trim de bairro; bairro <> vazio não exclui só espaços. Acrescenta uf > 0, diferente da representação textual não vazia pedida. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=25].response e cases[id=25] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 25,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por UF/IBGE/bairro preserva nome original e separa bairros homônimos; filtros são analisados separadamente. Fonte: results[id=25].response e cases[id=25] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 25,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "UF e IBGE mantêm os códigos; toString muda seus tipos, mas todos os códigos correspondem aos esperados após conferência explícita de representação. Fonte: results[id=25].response e cases[id=25] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 25,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "As 33.696 linhas têm os mesmos códigos, bairros e contagens após converter identificadores para texto apenas nesta conferência. Isso não altera a reprovação estrita original nem aprova os filtros omitidos. Fonte: results[id=25].response e cases[id=25] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 25,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (33696 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=25].response e cases[id=25] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 25,
+      "dimension": "output_contract",
+      "status": "fail",
+      "evidence": "UF/IBGE retornam strings por toString; a referência congela identificadores numéricos. Colunas e ordem coincidem, mas a representação difere. A comparação estrita original permanece incorreta. Fonte: results[id=25].response e cases[id=25] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 25,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=25].response e cases[id=25] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 26,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "Exclui UF nula/texto vazio com toString, mas omite cnes > 0. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=26].response e cases[id=26] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 26,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por UF correto como operação; não corrige a omissão do filtro. Fonte: results[id=26].response e cases[id=26] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 26,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=26].response e cases[id=26] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 26,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 27 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=26].response e cases[id=26] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 26,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (27 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=26].response e cases[id=26] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 26,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'total'], na ordem solicitada ['uf', 'total']; representação compatível com o protocolo. Fonte: results[id=26].response e cases[id=26] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 26,
+      "dimension": "text_fidelity",
+      "status": "fail",
+      "evidence": "A explicação associa código 31 ao Rio de Janeiro e depois a Minas Gerais; inventa código 91 e mínimo 1.021 para Roraima. A tabela não contém 91/1.021 e seu mínimo é 162 no código 16. O resumo factual correto não anula a explicação incorreta. Fonte: results[id=26].response e cases[id=26] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 27,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "CNES positivo e UF textual não vazia/nula estão presentes. Fonte: results[id=27].response e cases[id=27] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 27,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT por UF com MAX(total) inclui todos os empates. Fonte: results[id=27].response e cases[id=27] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 27,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=27].response e cases[id=27] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 27,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=27].response e cases[id=27] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 27,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=27].response e cases[id=27] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 27,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'total'], na ordem solicitada ['uf', 'total']; representação compatível com o protocolo. Fonte: results[id=27].response e cases[id=27] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 27,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=27].response e cases[id=27] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 28,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "CNES positivo e TRIM(logradouro)/TRIM(bairro) não vazios exigidos na mesma linha. Fonte: results[id=28].response e cases[id=28] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 28,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES conta UBS com ao menos uma linha elegível. Fonte: results[id=28].response e cases[id=28] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 28,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=28].response e cases[id=28] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 28,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=28].response e cases[id=28] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 28,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=28].response e cases[id=28] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 28,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=28].response e cases[id=28] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 28,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=28].response e cases[id=28] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 29,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "ibge = 355030 presente e bairro não é filtrado; falta cnes > 0. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=29].response e cases[id=29] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 29,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por bairro mantém bairros vazios/nulos presentes. Fonte: results[id=29].response e cases[id=29] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 29,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['bairro', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=29].response e cases[id=29] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 29,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 449 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=29].response e cases[id=29] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 29,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (449 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=29].response e cases[id=29] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 29,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['bairro', 'total'], na ordem solicitada ['bairro', 'total']; representação compatível com o protocolo. Fonte: results[id=29].response e cases[id=29] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 29,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=29].response e cases[id=29] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 30,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "CNES e IBGE positivos estão filtrados. Fonte: results[id=30].response e cases[id=30] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 30,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "Agrupa municípios existentes e seleciona MIN(total_ubs), com todos os 720 empates retornados. Fonte: results[id=30].response e cases[id=30] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 30,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['municipio', 'total_ubs'] representa as entidades e medidas solicitadas. Fonte: results[id=30].response e cases[id=30] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 30,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 720 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=30].response e cases[id=30] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 30,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (720 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=30].response e cases[id=30] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 30,
+      "dimension": "output_contract",
+      "status": "partial",
+      "evidence": "Conteúdo, quantidade e ordem das colunas estão corretos, mas os nomes não seguem literalmente o pedido: recebido ['municipio', 'total_ubs']; solicitado ['municipio', 'total']. A métrica estrita de valores não verifica esses aliases. Fonte: results[id=30].response e cases[id=30] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 30,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=30].response e cases[id=30] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 31,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Não há filtro de linha a aplicar além do escopo integral da base; o SQL não acrescenta recortes. Avaliado como atendimento ao escopo, não como dimensão não aplicável. Fonte: results[id=31].response e cases[id=31] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 31,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT(*) conta linhas, sem deduplicar pessoas/episódios. Fonte: results[id=31].response e cases[id=31] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 31,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=31].response e cases[id=31] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 31,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=31].response e cases[id=31] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 31,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=31].response e cases[id=31] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 31,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=31].response e cases[id=31] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 31,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=31].response e cases[id=31] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 32,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Exclui data nula e 1970-01-01. Fonte: results[id=32].response e cases[id=32] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 32,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "Agrupa ano %Y e sem_not armazenada, sem recalcular semana; ano textual é permitido pela normalização da referência. Fonte: results[id=32].response e cases[id=32] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 32,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['ano', 'semana', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=32].response e cases[id=32] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 32,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 20 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=32].response e cases[id=32] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 32,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (20 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=32].response e cases[id=32] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 32,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['ano', 'semana', 'total'], na ordem solicitada ['ano', 'semana', 'total']; representação compatível com o protocolo. Fonte: results[id=32].response e cases[id=32] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 32,
+      "dimension": "text_fidelity",
+      "status": "partial",
+      "evidence": "Os valores 21 e 7.131 aparecem na tabela, mas o destaque do maior total informa apenas o ano 2026; omite a semana 16 que identifica esse grupo. Trata a semana como métrica de máximo, embora seja dimensão temporal. Fonte: results[id=32].response e cases[id=32] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 33,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "sg_uf_not não vazia/nula; não usa residência. Fonte: results[id=33].response e cases[id=33] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 33,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT por UF de notificação e seleção pelo máximo com empates. Fonte: results[id=33].response e cases[id=33] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 33,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=33].response e cases[id=33] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 33,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=33].response e cases[id=33] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 33,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=33].response e cases[id=33] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 33,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'total'], na ordem solicitada ['uf', 'total']; representação compatível com o protocolo. Fonte: results[id=33].response e cases[id=33] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 33,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=33].response e cases[id=33] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 34,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "sg_uf_not não vazia/nula, sem recorte adicional. Fonte: results[id=34].response e cases[id=34] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 34,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT por UF de notificação, todos os grupos presentes. Fonte: results[id=34].response e cases[id=34] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 34,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=34].response e cases[id=34] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 34,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 27 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=34].response e cases[id=34] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 34,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (27 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=34].response e cases[id=34] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 34,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'total'], na ordem solicitada ['uf', 'total']; representação compatível com o protocolo. Fonte: results[id=34].response e cases[id=34] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 34,
+      "dimension": "text_fidelity",
+      "status": "partial",
+      "evidence": "Valores e UFs citados conferem, mas rotula contagens de linhas sem deduplicação/classificação final como “casos de SRAG”. O pedido define notificações; a redação amplia o significado da unidade. Fonte: results[id=34].response e cases[id=34] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 35,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "co_mun_not > 0 está presente. Fonte: results[id=35].response e cases[id=35] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 35,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT códigos municipais de notificação, sem contar municípios de residência. Fonte: results[id=35].response e cases[id=35] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 35,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=35].response e cases[id=35] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 35,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=35].response e cases[id=35] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 35,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=35].response e cases[id=35] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 35,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=35].response e cases[id=35] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 35,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=35].response e cases[id=35] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 36,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Nenhum filtro global exclui hospital nulo/desconhecido do denominador. Fonte: results[id=36].response e cases[id=36] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 36,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM CASE hospital=1 / COUNT(*) *100; ELSE 0 e NULLIF respeitam numerador e denominador. Fonte: results[id=36].response e cases[id=36] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 36,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=36].response e cases[id=36] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 36,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=36].response e cases[id=36] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 36,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=36].response e cases[id=36] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 36,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['percentual'], na ordem solicitada ['percentual']; representação compatível com o protocolo. Fonte: results[id=36].response e cases[id=36] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 36,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=36].response e cases[id=36] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 37,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "WHERE evolucao=2 limita exatamente ao código solicitado. Fonte: results[id=37].response e cases[id=37] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 37,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT(*) conta linhas com esse código, sem inferir outros desfechos. Fonte: results[id=37].response e cases[id=37] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 37,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=37].response e cases[id=37] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 37,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=37].response e cases[id=37] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 37,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=37].response e cases[id=37] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 37,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=37].response e cases[id=37] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 37,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=37].response e cases[id=37] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 38,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "hospital=1 no denominador; hospital=1 AND evolucao=2 no numerador. Fonte: results[id=38].response e cases[id=38] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 38,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "Divide contagens escalares, multiplica por 100 e protege denominador zero; CROSS JOIN de duas linhas agregadas não multiplica casos. Fonte: results[id=38].response e cases[id=38] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 38,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=38].response e cases[id=38] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 38,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=38].response e cases[id=38] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 38,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=38].response e cases[id=38] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 38,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['percentual'], na ordem solicitada ['percentual']; representação compatível com o protocolo. Fonte: results[id=38].response e cases[id=38] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 38,
+      "dimension": "text_fidelity",
+      "status": "fail",
+      "evidence": "O texto interpreta evolucao=2 como evolução positiva/melhoria. O metadado SRAG EVOLUCAO define 2=Óbito. O percentual 4,44 está correto, mas a interpretação do desfecho foi invertida. Fonte: results[id=38].response e cases[id=38] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 39,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "COUNT total mantém uti nula/desconhecida; numerador uti=1. Fonte: results[id=39].response e cases[id=39] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 39,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "100*contagem uti=1/total; CASE e NULLIF protegem denominador zero. Fonte: results[id=39].response e cases[id=39] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 39,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=39].response e cases[id=39] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 39,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=39].response e cases[id=39] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 39,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=39].response e cases[id=39] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 39,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['percentual'], na ordem solicitada ['percentual']; representação compatível com o protocolo. Fonte: results[id=39].response e cases[id=39] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 39,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=39].response e cases[id=39] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 40,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Exclui sg_uf_not vazia/nula e mantém todas as linhas de cada UF no denominador. Fonte: results[id=40].response e cases[id=40] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 40,
+      "dimension": "aggregation",
+      "status": "fail",
+      "evidence": "Percentual por UF calculado corretamente, mas seleciona MAX(TotalObitos), não MAX(percentual): maximiza contagem absoluta. Fonte: results[id=40].response e cases[id=40] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 40,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=40].response e cases[id=40] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 40,
+      "dimension": "main_information",
+      "status": "fail",
+      "evidence": "Retorna SP com 4.438280166435506%, enquanto a maior proporção pedida é PI com 13.16793893129771%. Fonte: results[id=40].response e cases[id=40] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 40,
+      "dimension": "completeness",
+      "status": "fail",
+      "evidence": "Seleciona o extremo de contagem absoluta de óbitos, não o extremo percentual solicitado, omitindo a UF vencedora correta. Fonte: results[id=40].response e cases[id=40] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 40,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'percentual'], na ordem solicitada ['uf', 'percentual']; representação compatível com o protocolo. Fonte: results[id=40].response e cases[id=40] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 40,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "O resumo “nos dados retornados, maior percentual: SP (4,44)” coincide com a única linha retornada. Esta aprovação é de fidelidade à tabela, não de correção da seleção, reprovada em agregação, informação principal e escopo. Fonte: results[id=40].response e cases[id=40] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 41,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Cada countIf testa seu indicador =1, sem exigir exclusividade. Fonte: results[id=41].response e cases[id=41] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 41,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "Seis countIf independentes permitem que uma notificação contribua para vários sintomas. Fonte: results[id=41].response e cases[id=41] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 41,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['febre', 'tosse', 'garganta', 'dispneia', 'diarreia', 'vomito'] representa as entidades e medidas solicitadas. Fonte: results[id=41].response e cases[id=41] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 41,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=41].response e cases[id=41] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 41,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=41].response e cases[id=41] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 41,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['febre', 'tosse', 'garganta', 'dispneia', 'diarreia', 'vomito'], na ordem solicitada ['febre', 'tosse', 'garganta', 'dispneia', 'diarreia', 'vomito']; representação compatível com o protocolo. Fonte: results[id=41].response e cases[id=41] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 41,
+      "dimension": "text_fidelity",
+      "status": "partial",
+      "evidence": "Tosse é de fato o indicador mais frequente, mas a ordem posterior é falsa: vomito=11.283 supera garganta=10.769 e diarreia=7.973; o texto coloca vômito por último. As seis contagens da tabela permanecem corretas. Fonte: results[id=41].response e cases[id=41] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 43,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "OR entre os dez indicadores =1; total de linhas fica sem filtros. Fonte: results[id=43].response e cases[id=43] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 43,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT de linhas que satisfazem OR, não soma contagens sobrepostas; razão *100 e proteção de zero. Fonte: results[id=43].response e cases[id=43] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 43,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=43].response e cases[id=43] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 43,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=43].response e cases[id=43] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 43,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=43].response e cases[id=43] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 43,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['percentual'], na ordem solicitada ['percentual']; representação compatível com o protocolo. Fonte: results[id=43].response e cases[id=43] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 43,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=43].response e cases[id=43] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 44,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "pcr_sars2=1 OR pos_pcrflu=1 está explícito. Fonte: results[id=44].response e cases[id=44] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 44,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "countIf do OR conta cada linha uma vez, mesmo com ambos positivos. Fonte: results[id=44].response e cases[id=44] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 44,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=44].response e cases[id=44] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 44,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=44].response e cases[id=44] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 44,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=44].response e cases[id=44] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 44,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=44].response e cases[id=44] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 44,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=44].response e cases[id=44] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 45,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Cada ramo testa um dos três indicadores =1. Fonte: results[id=45].response e cases[id=45] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 45,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "UNION ALL de contagens escalares inclui zero e seleciona MAX com empates; rótulos em maiúsculas são aceitos pelo casefold do protocolo. Fonte: results[id=45].response e cases[id=45] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 45,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "POS_PCRFLU identifica o mesmo indicador de pos_pcrflu; o protocolo da Q45 admite normalização casefold. Não se interpretou como outro agente. Fonte: results[id=45].response e cases[id=45] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 45,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=45].response e cases[id=45] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 45,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=45].response e cases[id=45] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 45,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['agente', 'total'], na ordem solicitada ['agente', 'total']; representação compatível com o protocolo. Fonte: results[id=45].response e cases[id=45] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 45,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=45].response e cases[id=45] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 46,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "COMP=(SELECT MAX(COMP) FROM leitos) aplica última competência global. Fonte: results[id=46].response e cases[id=46] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 46,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM LEITOS_EXISTENTES soma estoque cadastrado, não linhas/vagas livres. Fonte: results[id=46].response e cases[id=46] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 46,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=46].response e cases[id=46] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 46,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=46].response e cases[id=46] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 46,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=46].response e cases[id=46] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 46,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=46].response e cases[id=46] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 46,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=46].response e cases[id=46] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 47,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global sem filtro adicional. Fonte: results[id=47].response e cases[id=47] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 47,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM LEITOS_SUS corresponde ao total solicitado. Fonte: results[id=47].response e cases[id=47] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 47,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=47].response e cases[id=47] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 47,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=47].response e cases[id=47] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 47,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=47].response e cases[id=47] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 47,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=47].response e cases[id=47] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 47,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=47].response e cases[id=47] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 48,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global aplicada às duas somas. Fonte: results[id=48].response e cases[id=48] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 48,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "100*SUM(LEITOS_SUS)/NULLIF(SUM(LEITOS_EXISTENTES),0), razão de somas e não média de percentuais. Fonte: results[id=48].response e cases[id=48] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 48,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=48].response e cases[id=48] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 48,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=48].response e cases[id=48] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 48,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=48].response e cases[id=48] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 48,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['percentual'], na ordem solicitada ['percentual']; representação compatível com o protocolo. Fonte: results[id=48].response e cases[id=48] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 48,
+      "dimension": "text_fidelity",
+      "status": "fail",
+      "evidence": "O valor 67,65% confere, porém a frase “há um uso de 67,65%” infere utilização/ocupação a partir da composição SUS do estoque cadastrado. A consulta não mede uso nem vagas livres. Fonte: results[id=48].response e cases[id=48] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 50,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "Última COMP global presente, mas falta excluir UF nula/vazia. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=50].response e cases[id=50] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 50,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM LEITOS_EXISTENTES por UF, sem LIMIT ou exclusão de totais zero. Fonte: results[id=50].response e cases[id=50] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 50,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['UF', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=50].response e cases[id=50] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 50,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 27 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=50].response e cases[id=50] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 50,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (27 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=50].response e cases[id=50] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 50,
+      "dimension": "output_contract",
+      "status": "partial",
+      "evidence": "Conteúdo, quantidade e ordem das colunas estão corretos, mas os nomes não seguem literalmente o pedido: recebido ['UF', 'total']; solicitado ['uf', 'total']. A métrica estrita de valores não verifica esses aliases. Fonte: results[id=50].response e cases[id=50] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 50,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=50].response e cases[id=50] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 51,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global aplicada. Fonte: results[id=51].response e cases[id=51] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 51,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM UTI_TOTAL_EXIST corresponde ao estoque de UTI solicitado. Fonte: results[id=51].response e cases[id=51] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 51,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=51].response e cases[id=51] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 51,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=51].response e cases[id=51] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 51,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=51].response e cases[id=51] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 51,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=51].response e cases[id=51] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 51,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=51].response e cases[id=51] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 52,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global aplicada. Fonte: results[id=52].response e cases[id=52] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 52,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "100*SUM(UTI_TOTAL_EXIST)/NULLIF(SUM(LEITOS_EXISTENTES),0) calcula composição percentual do estoque. Fonte: results[id=52].response e cases[id=52] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 52,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['percentual'] representa as entidades e medidas solicitadas. Fonte: results[id=52].response e cases[id=52] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 52,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=52].response e cases[id=52] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 52,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=52].response e cases[id=52] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 52,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['percentual'], na ordem solicitada ['percentual']; representação compatível com o protocolo. Fonte: results[id=52].response e cases[id=52] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 52,
+      "dimension": "text_fidelity",
+      "status": "fail",
+      "evidence": "12,29% está correto, mas o texto o converte em “12,29 leitos de UTI por cada leito geral”: erro de escala por fator 100. O denominador é todo o estoque existente, não somente leitos gerais. Fonte: results[id=52].response e cases[id=52] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 53,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global e tipo não vazio/nulo tanto na consulta principal como na subconsulta. Fonte: results[id=53].response e cases[id=53] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 53,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM por tipo; HAVING compara com máximo dos totais agrupados, incluindo empates. Fonte: results[id=53].response e cases[id=53] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 53,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['tipo', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=53].response e cases[id=53] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 53,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=53].response e cases[id=53] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 53,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=53].response e cases[id=53] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 53,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['tipo', 'total'], na ordem solicitada ['tipo', 'total']; representação compatível com o protocolo. Fonte: results[id=53].response e cases[id=53] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 53,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=53].response e cases[id=53] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 54,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global aplicada às cinco somas. Fonte: results[id=54].response e cases[id=54] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 54,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "Somas dos cinco tipos de UTI em uma única linha e ordem solicitada. Fonte: results[id=54].response e cases[id=54] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 54,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['UTI_ADULTO_EXIST', 'UTI_PEDIATRICO_EXIST', 'UTI_NEONATAL_EXIST', 'UTI_CORONARIANA_EXIST', 'UTI_QUEIMADO_EXIST'] representa as entidades e medidas solicitadas. Fonte: results[id=54].response e cases[id=54] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 54,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=54].response e cases[id=54] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 54,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=54].response e cases[id=54] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 54,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['UTI_ADULTO_EXIST', 'UTI_PEDIATRICO_EXIST', 'UTI_NEONATAL_EXIST', 'UTI_CORONARIANA_EXIST', 'UTI_QUEIMADO_EXIST'], na ordem solicitada ['UTI_ADULTO_EXIST', 'UTI_PEDIATRICO_EXIST', 'UTI_NEONATAL_EXIST', 'UTI_CORONARIANA_EXIST', 'UTI_QUEIMADO_EXIST']; representação compatível com o protocolo. Fonte: results[id=54].response e cases[id=54] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 54,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=54].response e cases[id=54] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 56,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global, TP_GESTAO e CNES não nulos/vazios em ambas as agregações. Fonte: results[id=56].response e cases[id=56] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 56,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT DISTINCT CNES por gestão; HAVING com máximo dos totais preserva empates e não infere natureza jurídica. Fonte: results[id=56].response e cases[id=56] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 56,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['TP_GESTAO', 'total'] representa as entidades e medidas solicitadas. Fonte: results[id=56].response e cases[id=56] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 56,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=56].response e cases[id=56] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 56,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=56].response e cases[id=56] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 56,
+      "dimension": "output_contract",
+      "status": "partial",
+      "evidence": "Conteúdo, quantidade e ordem das colunas estão corretos, mas os nomes não seguem literalmente o pedido: recebido ['TP_GESTAO', 'total']; solicitado ['gestao', 'total']. A métrica estrita de valores não verifica esses aliases. Fonte: results[id=56].response e cases[id=56] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 56,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=56].response e cases[id=56] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 57,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "Última COMP global e alternativas TRIM(NATUREZA_JURIDICA) LIKE 2%/3% agrupadas; não usa TP_GESTAO. Fonte: results[id=57].response e cases[id=57] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 57,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM LEITOS_SUS nas linhas elegíveis, sem multiplicação por JOIN. Fonte: results[id=57].response e cases[id=57] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 57,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['total'] representa as entidades e medidas solicitadas. Fonte: results[id=57].response e cases[id=57] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 57,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=57].response e cases[id=57] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 57,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=57].response e cases[id=57] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 57,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['total'], na ordem solicitada ['total']; representação compatível com o protocolo. Fonte: results[id=57].response e cases[id=57] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 57,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=57].response e cases[id=57] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 59,
+      "dimension": "filters",
+      "status": "fail",
+      "evidence": "Última COMP global presente, mas falta excluir REGIAO nula/vazia. A coincidência eventual dos resultados não implementa o filtro ausente. Fonte: results[id=59].response e cases[id=59] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 59,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "SUM existentes e SUS por REGIAO, com todos os grupos presentes. Fonte: results[id=59].response e cases[id=59] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 59,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['REGIAO', 'existentes', 'sus'] representa as entidades e medidas solicitadas. Fonte: results[id=59].response e cases[id=59] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 59,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 5 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=59].response e cases[id=59] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 59,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (5 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=59].response e cases[id=59] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 59,
+      "dimension": "output_contract",
+      "status": "partial",
+      "evidence": "Conteúdo, quantidade e ordem das colunas estão corretos, mas os nomes não seguem literalmente o pedido: recebido ['REGIAO', 'existentes', 'sus']; solicitado ['regiao', 'existentes', 'sus']. A métrica estrita de valores não verifica esses aliases. Fonte: results[id=59].response e cases[id=59] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 59,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=59].response e cases[id=59] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 62,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "CNES positivo na UBS e município positivo na SRAG; INNER JOIN por igualdade com co_mun_not > 0 exclui também ibge não positivo, mesmo sem repetir esse filtro na CTE UBS. Fonte: results[id=62].response e cases[id=62] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 62,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "Pré-agregações independentes: COUNT SRAG e COUNT DISTINCT CNES; INNER JOIN por município evita multiplicar notificações; ordenação pedida presente. Fonte: results[id=62].response e cases[id=62] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 62,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['municipio', 'notificacoes', 'ubs'] representa as entidades e medidas solicitadas. Fonte: results[id=62].response e cases[id=62] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 62,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 1198 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=62].response e cases[id=62] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 62,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (1198 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=62].response e cases[id=62] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 62,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['municipio', 'notificacoes', 'ubs'], na ordem solicitada ['municipio', 'notificacoes', 'ubs']; representação compatível com o protocolo. Fonte: results[id=62].response e cases[id=62] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 62,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=62].response e cases[id=62] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 63,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "UFs não vazias/nulas nas duas bases; maior COMP global; filtro leitos>0 depois da soma é equivalente a HAVING. Fonte: results[id=63].response e cases[id=63] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 63,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT vacinação por residência e SUM UTI por UF em CTEs separadas; JOIN de agregados, sem multiplicação. Fonte: results[id=63].response e cases[id=63] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 63,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'doses', 'leitos'] representa as entidades e medidas solicitadas. Fonte: results[id=63].response e cases[id=63] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 63,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 27 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=63].response e cases[id=63] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 63,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (27 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=63].response e cases[id=63] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 63,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'doses', 'leitos'], na ordem solicitada ['uf', 'doses', 'leitos']; representação compatível com o protocolo. Fonte: results[id=63].response e cases[id=63] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 63,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=63].response e cases[id=63] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 64,
+      "dimension": "filters",
+      "status": "pass",
+      "evidence": "UFs não vazias/nulas nas duas bases; maior COMP global; filtro leitos>0 depois da soma é equivalente a HAVING. Fonte: results[id=64].response e cases[id=64] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 64,
+      "dimension": "aggregation",
+      "status": "pass",
+      "evidence": "COUNT vacinação por residência e SUM UTI por UF em CTEs separadas; JOIN de agregados, sem multiplicação. Fonte: results[id=64].response e cases[id=64] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 64,
+      "dimension": "identification",
+      "status": "pass",
+      "evidence": "Campos selecionados e unidade inspecionados no SQL; saída ['uf', 'doses', 'leitos'] representa as entidades e medidas solicitadas. Fonte: results[id=64].response e cases[id=64] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 64,
+      "dimension": "main_information",
+      "status": "pass",
+      "evidence": "Conteúdo central da tabela conferido contra a referência no snapshot: 27 linha(s). A classificação não aprova automaticamente os filtros ou o texto. Fonte: results[id=64].response e cases[id=64] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 64,
+      "dimension": "completeness",
+      "status": "pass",
+      "evidence": "A tabela contém os grupos e medidas solicitados no snapshot (27 linha(s)); não há LIMIT indevido. A inspeção de seleção/empates consta na análise de agregação. Fonte: results[id=64].response e cases[id=64] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 64,
+      "dimension": "output_contract",
+      "status": "pass",
+      "evidence": "Colunas retornadas ['uf', 'doses', 'leitos'], na ordem solicitada ['uf', 'doses', 'leitos']; representação compatível com o protocolo. Fonte: results[id=64].response e cases[id=64] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    },
+    {
+      "id": 64,
+      "dimension": "text_fidelity",
+      "status": "pass",
+      "evidence": "Explicação e resumo conferidos com a tabela: números e destaque são compatíveis, sem afirmação adicional incompatível identificada. Resumo de destaques é aceito quando a tabela completa acompanha a resposta. Fonte: results[id=64].response e cases[id=64] do pacote de referência vinculado.",
+      "reviewer": "Codex",
+      "reviewed_at": "2026-09-30T12:29:10.779397+00:00",
+      "review_kind": "ai_assisted"
+    }
+  ]
+}

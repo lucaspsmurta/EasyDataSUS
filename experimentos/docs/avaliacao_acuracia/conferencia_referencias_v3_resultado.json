@@ -1,0 +1,557 @@
+{
+  "created_at": "2026-09-23T22:40:02.115759+00:00",
+  "review_type": "automated_technical_crosscheck_not_human_signoff",
+  "reference_sha256": "af6da50fbdffc57aa53fcc8002c0414b75d97a4e28e53f1ec8c4cac51b4d0e97",
+  "catalog_sha256": "dd7653a659928ba7e8ebe673696d513be119f8af5b9b1e0bda21ba237105ea5d",
+  "snapshot_matches_frozen": true,
+  "snapshot_unchanged": true,
+  "comparison": "Python independente; inteiros exatos; floats abs_tol=1e-9 e rel_tol=1e-12; sem normalização de saída",
+  "checks": [
+    {
+      "id": 1,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 2,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 3,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 4,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 28,
+      "column_count": 2
+    },
+    {
+      "id": 5,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 6,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 2,
+      "column_count": 2
+    },
+    {
+      "id": 7,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 8,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 3
+    },
+    {
+      "id": 9,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 83,
+      "column_count": 3
+    },
+    {
+      "id": 10,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 5,
+      "column_count": 2
+    },
+    {
+      "id": 11,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 12,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 13,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 45,
+      "column_count": 2
+    },
+    {
+      "id": 14,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 3
+    },
+    {
+      "id": 15,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 4,
+      "column_count": 2
+    },
+    {
+      "id": 16,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 17,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 27,
+      "column_count": 2
+    },
+    {
+      "id": 18,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 19,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 20,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 21,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 22,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1783,
+      "column_count": 2
+    },
+    {
+      "id": 23,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 24,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 25,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 33696,
+      "column_count": 4
+    },
+    {
+      "id": 26,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 27,
+      "column_count": 2
+    },
+    {
+      "id": 27,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 28,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 29,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 449,
+      "column_count": 2
+    },
+    {
+      "id": 30,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 720,
+      "column_count": 2
+    },
+    {
+      "id": 31,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 32,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 20,
+      "column_count": 3
+    },
+    {
+      "id": 33,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 34,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 27,
+      "column_count": 2
+    },
+    {
+      "id": 35,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 36,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 37,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 38,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 39,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 40,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 41,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 6
+    },
+    {
+      "id": 42,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 43,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 44,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 45,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 46,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 47,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 48,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 49,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 50,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 27,
+      "column_count": 2
+    },
+    {
+      "id": 51,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 52,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 53,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 54,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 5
+    },
+    {
+      "id": 55,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 56,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 57,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 58,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 2
+    },
+    {
+      "id": 59,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 5,
+      "column_count": 3
+    },
+    {
+      "id": 60,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 3
+    },
+    {
+      "id": 61,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1,
+      "column_count": 1
+    },
+    {
+      "id": 62,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 1198,
+      "column_count": 3
+    },
+    {
+      "id": 63,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 27,
+      "column_count": 3
+    },
+    {
+      "id": 64,
+      "sql_executed": true,
+      "frozen_matches_current": true,
+      "python_matches_current": true,
+      "row_count": 27,
+      "column_count": 3
+    },
+    {
+      "id": 65,
+      "numeric_reference": false
+    },
+    {
+      "id": 66,
+      "numeric_reference": false
+    },
+    {
+      "id": 67,
+      "numeric_reference": false
+    },
+    {
+      "id": 68,
+      "numeric_reference": false
+    }
+  ],
+  "data_quality": {
+    "ubs_nonpositive_uf": 0,
+    "q25_rows_with_invalid_municipality_and_nonempty_neighborhood": 0,
+    "bed_negative_values": {
+      "LEITOS_EXISTENTES": 0,
+      "LEITOS_SUS": 0
+    },
+    "latest_comp": "202602",
+    "competences": [
+      "202601",
+      "202602"
+    ],
+    "invalid_comp_format": 0,
+    "duplicate_bed_cnes_latest": 0,
+    "srag_age_zero_with_known_unit": 698,
+    "srag_unknown_age_unit": 0,
+    "vaccination_age_zero": 1438
+  }
+}

@@ -1,0 +1,1709 @@
+{
+  "version": "reference-v4",
+  "revision_notes": "Q25 explicita UF não vazia, município positivo e bairro não vazio após trim, preservando o nome no agrupamento. Q58 explicita denominador positivo. SQLs e regras de comparação idênticos ao v3; enunciados novos, sem reclassificação das rodadas anteriores; revisão humana pendente.",
+  "status": "draft",
+  "global_specification": "Avaliação restrita às tabelas carregadas, sem inferir cobertura nacional. Contagens de vacinação são registros, não pessoas. UBS são CNES distintos positivos. SRAG usa linhas de notificações, sem filtrar classi_fin; esta unidade deve ser revisada contra duplicatas antes de qualquer interpretação como casos únicos. Leitos são existentes na maior COMP global, nunca vagas livres. Indicadores SRAG = 1 significam presença; evolucao = 2 é o desfecho contado. Nulos/desconhecidos permanecem no denominador quando se pede todas as linhas. Os códigos e unidades da idade requerem revisão do dicionário da fonte.",
+  "cases": [
+    {
+      "id": 1,
+      "original_question": "Quantas doses de vacina contra a COVID-19 foram registradas no conjunto de dados carregado?",
+      "question": "Quantas doses de vacina contra a COVID-19 foram registradas no conjunto de dados carregado?",
+      "reference_sql": "SELECT count() AS total FROM vacinacao",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 2,
+      "original_question": "Qual estado apresentou o maior número de registros de primeira dose de COVID-19?",
+      "question": "Qual UF de residência não vazia tem mais registros de primeira dose ('1ª Dose') no recorte? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,total.",
+      "reference_sql": "WITH grouped AS (SELECT paciente_endereco_uf AS uf, count() AS total FROM vacinacao WHERE paciente_endereco_uf != '' AND vacina_descricao_dose = '1ª Dose' GROUP BY uf) SELECT uf,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 3,
+      "original_question": "Quantos registros de segunda dose contra a COVID-19 existem no conjunto de dados carregado?",
+      "question": "Quantos registros têm vacina_descricao_dose igual a '2ª Dose' na base carregada?",
+      "reference_sql": "SELECT countIf(vacina_descricao_dose = '2ª Dose') AS total FROM vacinacao",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 4,
+      "original_question": "Qual é a diferença entre registros de primeira dose e segunda dose por estado?",
+      "question": "Por UF de residência não vazia, qual a diferença entre registros de '1ª Dose' e '2ª Dose'? Retorne UF e diferença, incluindo todas as UFs presentes.",
+      "reference_sql": "SELECT paciente_endereco_uf AS uf, toInt64(countIf(vacina_descricao_dose = '1ª Dose')) - toInt64(countIf(vacina_descricao_dose = '2ª Dose')) AS diferenca FROM vacinacao WHERE paciente_endereco_uf != '' GROUP BY uf",
+      "columns": [
+        "uf",
+        "diferenca"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 5,
+      "original_question": "Quantos registros de doses de reforço existem em relação aos registros de primeira dose?",
+      "question": "Qual a razão entre o número de registros cuja descrição da dose contém 'reforço' (sem distinguir maiúsculas) e os de '1ª Dose'? Retorne apenas a razão, não percentual; nulo se denominador zero. Retorne a razão com pelo menos seis casas decimais.",
+      "reference_sql": "SELECT countIf(positionCaseInsensitiveUTF8(ifNull(vacina_descricao_dose,''), 'reforço') > 0) / nullIf(countIf(vacina_descricao_dose = '1ª Dose'),0) AS razao FROM vacinacao",
+      "columns": [
+        "razao"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "absolute_tolerance": 1e-06
+          }
+        }
+      }
+    },
+    {
+      "id": 6,
+      "original_question": "Qual é o percentual de mulheres em relação a homens na campanha de vacinação?",
+      "question": "Qual o percentual de registros F e de registros M no campo paciente_enumSexoBiologico, usando somente F e M no denominador? Retorne as duas categorias e percentuais, nulo se não houver F/M.",
+      "reference_sql": "SELECT 'F' AS sexo, 100.0 * countIf(paciente_enumSexoBiologico = 'F') / nullIf(countIf(paciente_enumSexoBiologico IN ('F','M')),0) AS percentual FROM vacinacao UNION ALL SELECT 'M' AS sexo, 100.0 * countIf(paciente_enumSexoBiologico = 'M') / nullIf(countIf(paciente_enumSexoBiologico IN ('F','M')),0) AS percentual FROM vacinacao",
+      "columns": [
+        "sexo",
+        "percentual"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "1": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 7,
+      "original_question": "Qual faixa etária teve menor número de registros de vacinação?",
+      "question": "Entre faixas etárias presentes 0-18, 19-59 e 60+ anos, excluindo idades negativas, qual tem menos registros de vacinação? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: faixa,total.",
+      "reference_sql": "WITH grouped AS (SELECT multiIf(paciente_idade < 0, 'ignorada', paciente_idade <= 18, '0-18', paciente_idade <= 59, '19-59', '60+') AS faixa, count() AS total FROM vacinacao WHERE paciente_idade >= 0 GROUP BY faixa) SELECT faixa,total FROM grouped WHERE total = (SELECT min(total) FROM grouped)",
+      "columns": [
+        "faixa",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 8,
+      "original_question": "Quais municípios apresentam maior número de registros de vacinação contra a COVID-19?",
+      "question": "Quais municípios de residência (UF e código IBGE não vazios) têm a maior contagem de registros de vacinação? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,municipio,total.",
+      "reference_sql": "WITH grouped AS (SELECT paciente_endereco_uf AS uf, paciente_endereco_coIbgeMunicipio AS municipio, count() AS total FROM vacinacao WHERE paciente_endereco_uf != '' AND notEmpty(ifNull(paciente_endereco_coIbgeMunicipio,'')) GROUP BY uf,municipio) SELECT uf,municipio,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "municipio",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 9,
+      "original_question": "Qual é a distribuição de vacinados por faixa etária e estado (análise de duas dimensões)?",
+      "question": "Qual a contagem de registros de vacinação por UF de residência não vazia e faixas 0-18, 19-59 e 60+ anos? Exclua idades negativas; retorne todos os grupos presentes, UF, faixa e total. Não conte pessoas distintas.",
+      "reference_sql": "SELECT paciente_endereco_uf AS uf, multiIf(paciente_idade < 0, 'ignorada', paciente_idade <= 18, '0-18', paciente_idade <= 59, '19-59', '60+') AS faixa, count() AS total FROM vacinacao WHERE paciente_endereco_uf != '' AND paciente_idade >= 0 GROUP BY uf,faixa",
+      "columns": [
+        "uf",
+        "faixa",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 10,
+      "original_question": "Qual é a distribuição de doses registradas por sistema de origem dos dados?",
+      "question": "Qual a contagem de registros de vacinação por sistema_origem? Retorne todos os grupos; mantenha nulos como nulos.",
+      "reference_sql": "SELECT sistema_origem, count() AS total FROM vacinacao GROUP BY sistema_origem",
+      "columns": [
+        "sistema_origem",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 11,
+      "original_question": "Qual vacina foi mais utilizada na campanha (em % de doses totais)?",
+      "question": "Qual vacina_nome não vazio tem mais registros e qual o percentual desses registros sobre todas as linhas de vacinação? Retorne nome e percentual. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: vacina,percentual.",
+      "reference_sql": "WITH grouped AS (SELECT vacina_nome AS vacina, 100.0 * count() / nullIf((SELECT count() FROM vacinacao),0) AS percentual FROM vacinacao WHERE notEmpty(ifNull(vacina_nome,'')) GROUP BY vacina) SELECT vacina,percentual FROM grouped WHERE percentual = (SELECT max(percentual) FROM grouped)",
+      "columns": [
+        "vacina",
+        "percentual"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "1": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 12,
+      "original_question": "Qual fabricante aparece com maior número de registros de doses aplicadas?",
+      "question": "Qual fabricante não vazio tem mais registros de vacinação? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: fabricante,total.",
+      "reference_sql": "WITH grouped AS (SELECT vacina_fabricante_nome AS fabricante, count() AS total FROM vacinacao WHERE notEmpty(ifNull(vacina_fabricante_nome,'')) GROUP BY fabricante) SELECT fabricante,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "fabricante",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 13,
+      "original_question": "Qual é a evolução temporal de doses aplicadas por mês (tendência da campanha)?",
+      "question": "Qual a contagem de registros de vacinação por ano e mês de aplicação? Retorne mes no formato AAAA-MM e total de todos os meses presentes; exclua datas nulas.",
+      "reference_sql": "SELECT formatDateTime(vacina_dataAplicacao,'%Y-%m') AS mes, count() AS total FROM vacinacao WHERE vacina_dataAplicacao IS NOT NULL GROUP BY mes",
+      "columns": [
+        "mes",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 14,
+      "original_question": "Qual estado teve o maior pico de vacinação em um único mês?",
+      "question": "Qual combinação de UF de residência não vazia e mês de aplicação (AAAA-MM) tem mais registros de vacinação? Exclua datas nulas. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,mes,total.",
+      "reference_sql": "WITH grouped AS (SELECT paciente_endereco_uf AS uf, formatDateTime(vacina_dataAplicacao,'%Y-%m') AS mes, count() AS total FROM vacinacao WHERE paciente_endereco_uf != '' AND vacina_dataAplicacao IS NOT NULL GROUP BY uf,mes) SELECT uf,mes,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "mes",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 15,
+      "original_question": "Quantos registros existem para cada tipo de dose de reforço (Reforço 1, Reforço 2, etc.)?",
+      "question": "Quantos registros existem por descrição de dose que contenha 'reforço', sem distinguir maiúsculas? Preserve a descrição original e retorne todos os grupos.",
+      "reference_sql": "SELECT vacina_descricao_dose AS dose, count() AS total FROM vacinacao WHERE positionCaseInsensitiveUTF8(ifNull(vacina_descricao_dose,''), 'reforço') > 0 GROUP BY dose",
+      "columns": [
+        "dose",
+        "total"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 16,
+      "original_question": "Quantas Unidades Básicas de Saúde (UBS) estão ativas no Brasil?",
+      "question": "Quantas UBS distintas estão cadastradas na base carregada, contando CNES positivos? Não inferir situação ativa.",
+      "reference_sql": "SELECT uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "Original pede ativas; schema não possui situação. Versão revisada mede cadastradas.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 17,
+      "original_question": "Qual é a distribuição de UBS por estado?",
+      "question": "Qual a contagem de CNES distintos positivos de UBS por código de UF não vazio? Retorne todos os grupos presentes.",
+      "reference_sql": "SELECT uf, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND toString(uf) != '' GROUP BY uf",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 26,
+      "original_question": "Qual é a distribuição de UBS por código de UF?",
+      "question": "Qual a contagem de CNES distintos positivos de UBS por código de UF não vazio? Retorne todos os grupos presentes.",
+      "reference_sql": "SELECT uf, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND toString(uf) != '' GROUP BY uf",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "repeat_of": 17
+    },
+    {
+      "id": 18,
+      "original_question": "Qual estado tem o maior número absoluto de UBS cadastradas?",
+      "question": "Qual código de UF não vazio tem mais UBS distintas (CNES positivos)? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,total.",
+      "reference_sql": "WITH grouped AS (SELECT uf, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND toString(uf) != '' GROUP BY uf) SELECT uf,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 27,
+      "original_question": "Qual código de UF concentra o maior número de UBS cadastradas?",
+      "question": "Qual código de UF não vazio tem mais UBS distintas (CNES positivos)? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,total.",
+      "reference_sql": "WITH grouped AS (SELECT uf, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND toString(uf) != '' GROUP BY uf) SELECT uf,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "repeat_of": 18
+    },
+    {
+      "id": 19,
+      "original_question": "Em quantos municípios há pelo menos uma UBS cadastrada?",
+      "question": "Quantos códigos de município positivos possuem pelo menos um CNES positivo na base de UBS?",
+      "reference_sql": "SELECT uniqExact(ibge) AS total FROM atencao_basica WHERE cnes > 0 AND ibge > 0",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 20,
+      "original_question": "Quais municípios possuem o maior número de UBS cadastradas?",
+      "question": "Quais códigos de município positivos têm mais UBS distintas, contando CNES positivos nos municípios presentes na base? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: municipio,total.",
+      "reference_sql": "WITH grouped AS (SELECT ibge AS municipio, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND ibge > 0 GROUP BY municipio) SELECT municipio,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "municipio",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 21,
+      "original_question": "Qual município tem o maior número de UBS cadastradas no recorte carregado?",
+      "question": "Quais códigos de município positivos têm mais UBS distintas, contando CNES positivos nos municípios presentes na base? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: municipio,total.",
+      "reference_sql": "WITH grouped AS (SELECT ibge AS municipio, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND ibge > 0 GROUP BY municipio) SELECT municipio,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "municipio",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "repeat_of": 20
+    },
+    {
+      "id": 30,
+      "original_question": "Quais municípios possuem menor número de UBS cadastradas entre os municípios presentes na base?",
+      "question": "Quais códigos de município positivos têm menos UBS distintas, contando CNES positivos nos municípios presentes na base? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: municipio,total.",
+      "reference_sql": "WITH grouped AS (SELECT ibge AS municipio, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND ibge > 0 GROUP BY municipio) SELECT municipio,total FROM grouped WHERE total = (SELECT min(total) FROM grouped)",
+      "columns": [
+        "municipio",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 22,
+      "original_question": "Qual é o padrão de distribuição de UBS nos municípios da região Nordeste?",
+      "question": "Na base de UBS, qual a contagem de CNES distintos positivos por município positivo nas UFs de códigos 21 a 29 (Nordeste)? Retorne todos os municípios, código e total.",
+      "reference_sql": "SELECT ibge AS municipio, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND ibge > 0 AND uf IN ('21','22','23','24','25','26','27','28','29') GROUP BY municipio",
+      "columns": [
+        "municipio",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 23,
+      "original_question": "Quantas UBS possuem informações completas de localização (latitude/longitude)?",
+      "question": "Quantas UBS distintas (CNES positivos) têm latitude e longitude não zero e dentro de [-90,90] e [-180,180]?",
+      "reference_sql": "SELECT uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND latitude != 0 AND longitude != 0 AND latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "ETL converte coordenadas ausentes/inválidas em zero; não basta IS NOT NULL.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 24,
+      "original_question": "Quais municípios possuem maior número de UBS com coordenadas geográficas registradas?",
+      "question": "Quais municípios positivos têm mais UBS distintas com CNES positivo e coordenadas não zero nos intervalos latitude [-90,90] e longitude [-180,180]? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: municipio,total.",
+      "reference_sql": "WITH grouped AS (SELECT ibge AS municipio, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND ibge > 0 AND latitude != 0 AND longitude != 0 AND latitude BETWEEN -90 AND 90 AND longitude BETWEEN -180 AND 180 GROUP BY municipio) SELECT municipio,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "municipio",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 25,
+      "original_question": "Qual é a distribuição de UBS por bairro no conjunto de dados carregado?",
+      "question": "Qual a contagem de CNES distintos positivos por UF não vazia, código de município positivo e bairro não vazio após remover espaços nas extremidades, na base UBS? Preserve o nome original do bairro no agrupamento. Retorne todos os grupos; não una bairros homônimos de municípios diferentes.",
+      "reference_sql": "SELECT uf, ibge AS municipio, bairro, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND toString(uf) != '' AND ibge > 0 AND trimBoth(bairro) != '' GROUP BY uf,municipio,bairro",
+      "columns": [
+        "uf",
+        "municipio",
+        "bairro",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 28,
+      "original_question": "Quantas UBS possuem logradouro e bairro registrados?",
+      "question": "Quantas UBS distintas com CNES positivo possuem logradouro e bairro não vazios após remover espaços nas extremidades?",
+      "reference_sql": "SELECT uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND trimBoth(logradouro) != '' AND trimBoth(bairro) != ''",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 29,
+      "original_question": "Qual é a distribuição de UBS por bairro no município com código IBGE 355030?",
+      "question": "Qual a contagem de UBS distintas com CNES positivo por bairro no município IBGE 355030? Inclua todos os grupos, inclusive bairro vazio.",
+      "reference_sql": "SELECT bairro, uniqExact(cnes) AS total FROM atencao_basica WHERE cnes > 0 AND ibge = 355030 GROUP BY bairro",
+      "columns": [
+        "bairro",
+        "total"
+      ],
+      "expected_datasets": [
+        "atencao-basica"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 31,
+      "original_question": "Quantos casos de SRAG foram notificados no período analisado?",
+      "question": "Quantas linhas de notificações existem na tabela SRAG carregada, sem filtrar classificação final?",
+      "reference_sql": "SELECT count() AS total FROM srag",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 32,
+      "original_question": "Qual é a evolução semanal de notificações de SRAG?",
+      "question": "Qual a contagem de linhas de SRAG por ano de dt_notific e sem_not, excluindo dt_notific = '1970-01-01'? Retorne todos os grupos.",
+      "reference_sql": "SELECT toYear(dt_notific) AS ano, sem_not AS semana, count() AS total FROM srag WHERE dt_notific != toDate('1970-01-01') GROUP BY ano,semana",
+      "columns": [
+        "ano",
+        "semana",
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "normalization": "year"
+          }
+        }
+      }
+    },
+    {
+      "id": 33,
+      "original_question": "Qual estado apresentou o maior número de casos de SRAG no período?",
+      "question": "Qual UF de notificação não vazia tem mais linhas de SRAG na base carregada? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,total.",
+      "reference_sql": "WITH grouped AS (SELECT sg_uf_not AS uf, count() AS total FROM srag WHERE sg_uf_not != '' GROUP BY uf) SELECT uf,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 34,
+      "original_question": "Qual é a distribuição de notificações de SRAG por estado?",
+      "question": "Qual a contagem de linhas de SRAG por UF de notificação não vazia? Retorne todas as UFs presentes.",
+      "reference_sql": "SELECT sg_uf_not AS uf, count() AS total FROM srag WHERE sg_uf_not != '' GROUP BY uf",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 35,
+      "original_question": "Em quantos municípios foram registrados casos de SRAG?",
+      "question": "Quantos códigos de município de notificação positivos distintos existem nas linhas de SRAG?",
+      "reference_sql": "SELECT uniqExact(co_mun_not) AS total FROM srag WHERE co_mun_not > 0",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 36,
+      "original_question": "Qual é a taxa de hospitalização entre os casos notificados de SRAG?",
+      "question": "Qual o percentual de linhas de SRAG com hospital = 1 entre todas as linhas? Retorne nulo se o denominador for zero.",
+      "reference_sql": "SELECT 100.0 * countIf(hospital = 1) / nullIf(count(),0) AS percentual FROM srag",
+      "columns": [
+        "percentual"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 38,
+      "original_question": "Qual é a taxa de mortalidade entre os casos hospitalizados?",
+      "question": "Qual o percentual de linhas de SRAG com evolucao = 2 entre as linhas com hospital = 1? Retorne nulo se o denominador for zero.",
+      "reference_sql": "SELECT 100.0 * countIf(evolucao = 2 AND hospital = 1) / nullIf(countIf(hospital = 1),0) AS percentual FROM srag",
+      "columns": [
+        "percentual"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 39,
+      "original_question": "Qual é a taxa de internação em UTI entre todos os casos?",
+      "question": "Qual o percentual de linhas de SRAG com uti = 1 entre todas as linhas? Retorne nulo se o denominador for zero.",
+      "reference_sql": "SELECT 100.0 * countIf(uti = 1) / nullIf(count(),0) AS percentual FROM srag",
+      "columns": [
+        "percentual"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 37,
+      "original_question": "Quantos casos evoluíram para morte?",
+      "question": "Quantas linhas de SRAG possuem evolucao = 2?",
+      "reference_sql": "SELECT countIf(evolucao = 2) AS total FROM srag",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 40,
+      "original_question": "Qual estado teve a maior taxa de mortalidade (por casos)?",
+      "question": "Qual UF de notificação não vazia tem maior percentual de linhas com evolucao = 2, usando todas as linhas daquela UF no denominador? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,percentual.",
+      "reference_sql": "WITH grouped AS (SELECT sg_uf_not AS uf, 100.0 * countIf(evolucao = 2) / count() AS percentual FROM srag WHERE sg_uf_not != '' GROUP BY uf) SELECT uf,percentual FROM grouped WHERE percentual = (SELECT max(percentual) FROM grouped)",
+      "columns": [
+        "uf",
+        "percentual"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "1": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 41,
+      "original_question": "Qual é a distribuição de sintomas primários entre os casos (febre, tosse, dispneia, etc)?",
+      "question": "Retorne uma linha com as contagens de SRAG em que cada indicador vale 1, na ordem febre, tosse, garganta, dispneia, diarreia e vomito. Uma notificação pode contribuir para vários sintomas.",
+      "reference_sql": "SELECT countIf(febre = 1) AS febre, countIf(tosse = 1) AS tosse, countIf(garganta = 1) AS garganta, countIf(dispneia = 1) AS dispneia, countIf(diarreia = 1) AS diarreia, countIf(vomito = 1) AS vomito FROM srag",
+      "columns": [
+        "febre",
+        "tosse",
+        "garganta",
+        "dispneia",
+        "diarreia",
+        "vomito"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 42,
+      "original_question": "Qual é a faixa etária mais acometida por SRAG no período?",
+      "question": "Qual faixa tem mais linhas de SRAG: 0-18, 19-59 ou 60+ anos? Use nu_idade_n como magnitude da idade e tp_idade 1=dias, 2=meses e 3=anos; exclua idade nula, negativa e unidades desconhecidas. Para este teste, converta dias dividindo por 365.25 e meses por 12; anos permanecem iguais. Use os intervalos [0,19), [19,60) e [60,infinito), com rótulos '0-18', '19-59' e '60+'. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: faixa,total.",
+      "reference_sql": "WITH grouped AS (SELECT multiIf((multiIf(tp_idade = 1, nu_idade_n / 365.25, tp_idade = 2, nu_idade_n / 12.0, toFloat64(nu_idade_n))) < 19, '0-18', (multiIf(tp_idade = 1, nu_idade_n / 365.25, tp_idade = 2, nu_idade_n / 12.0, toFloat64(nu_idade_n))) < 60, '19-59', '60+') AS faixa, count() AS total FROM srag WHERE tp_idade IN (1,2,3) AND nu_idade_n IS NOT NULL AND nu_idade_n >= 0 GROUP BY faixa) SELECT faixa,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "faixa",
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "Conversão operacional aproximada explicitada na pergunta, não cálculo clínico de idade completa. Revisar codificação na fonte antes da validação científica.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 43,
+      "original_question": "Qual é a proporção de casos com comorbidades (diabetes, asma, cardiopatia, etc) entre os notificados?",
+      "question": "Qual o percentual de linhas de SRAG com ao menos um dos indicadores cardiopati, hematologi, hepatica, asma, diabetes, neurologic, pneumopati, imunodepre, renal ou obesidade igual a 1, sobre todas as linhas? Nulo se não houver linhas.",
+      "reference_sql": "SELECT 100.0 * countIf(cardiopati = 1 OR hematologi = 1 OR hepatica = 1 OR asma = 1 OR diabetes = 1 OR neurologic = 1 OR pneumopati = 1 OR imunodepre = 1 OR renal = 1 OR obesidade = 1) / nullIf(count(),0) AS percentual FROM srag",
+      "columns": [
+        "percentual"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 44,
+      "original_question": "Quantos casos tiveram confirmação laboratorial (PCR positivo)?",
+      "question": "Quantas linhas de SRAG têm pcr_sars2 = 1 ou pos_pcrflu = 1? Conte cada linha apenas uma vez.",
+      "reference_sql": "SELECT countIf(pcr_sars2 = 1 OR pos_pcrflu = 1) AS total FROM srag",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 45,
+      "original_question": "Qual agente etiológico foi mais frequentemente identificado (SARS-CoV-2, Influenza, VSR, etc)?",
+      "question": "Entre os indicadores pcr_sars2, pos_pcrflu e pcr_vsr, qual possui mais linhas de SRAG com valor 1? Retorne o nome do indicador e a contagem. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: agente,total.",
+      "reference_sql": "WITH grouped AS (SELECT 'pcr_sars2' AS agente, countIf(pcr_sars2 = 1) AS total FROM srag UNION ALL SELECT 'pos_pcrflu' AS agente, countIf(pos_pcrflu = 1) AS total FROM srag UNION ALL SELECT 'pcr_vsr' AS agente, countIf(pcr_vsr = 1) AS total FROM srag) SELECT agente,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "agente",
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "normalization": "casefold"
+          }
+        }
+      }
+    },
+    {
+      "id": 46,
+      "original_question": "Quantos leitos totais de internação estão disponíveis no Brasil?",
+      "question": "Qual a soma de LEITOS_EXISTENTES na tabela leitos na maior competência COMP global disponível? Conte leitos registrados, não vagas livres.",
+      "reference_sql": "SELECT sum(LEITOS_EXISTENTES) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos)",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 47,
+      "original_question": "Quantos desses são leitos SUS?",
+      "question": "Qual a soma de LEITOS_SUS na tabela leitos na maior competência COMP global disponível? Conte leitos registrados, não vagas livres.",
+      "reference_sql": "SELECT sum(LEITOS_SUS) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos)",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 51,
+      "original_question": "Quantos leitos de UTI estão disponíveis no Brasil no total?",
+      "question": "Qual a soma de UTI_TOTAL_EXIST na tabela leitos na maior competência COMP global disponível? Conte leitos registrados, não vagas livres.",
+      "reference_sql": "SELECT sum(UTI_TOTAL_EXIST) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos)",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 48,
+      "original_question": "Qual é a proporção de leitos SUS em relação ao total (% de cobertura pública)?",
+      "question": "Qual o percentual da soma de LEITOS_SUS sobre a soma de LEITOS_EXISTENTES na maior COMP global de leitos? Nulo se denominador zero.",
+      "reference_sql": "SELECT 100.0 * sum(LEITOS_SUS) / nullIf(sum(LEITOS_EXISTENTES),0) AS percentual FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos)",
+      "columns": [
+        "percentual"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 52,
+      "original_question": "Qual é a proporção de leitos de UTI em relação aos leitos totais?",
+      "question": "Qual o percentual da soma de UTI_TOTAL_EXIST sobre a soma de LEITOS_EXISTENTES na maior COMP global de leitos? Nulo se denominador zero.",
+      "reference_sql": "SELECT 100.0 * sum(UTI_TOTAL_EXIST) / nullIf(sum(LEITOS_EXISTENTES),0) AS percentual FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos)",
+      "columns": [
+        "percentual"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "0": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 49,
+      "original_question": "Qual estado possui maior capacidade absoluta de leitos?",
+      "question": "Qual UF não vazia tem a maior soma de LEITOS_EXISTENTES na maior COMP global de leitos? Inclua UFs com total zero. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,total.",
+      "reference_sql": "WITH grouped AS (SELECT UF AS uf, sum(LEITOS_EXISTENTES) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND UF != '' GROUP BY UF) SELECT uf,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 55,
+      "original_question": "Qual estado tem a menor quantidade absoluta de leitos de UTI neonatal na competência mais recente?",
+      "question": "Qual UF não vazia tem a menor soma de UTI_NEONATAL_EXIST na maior COMP global de leitos? Inclua UFs com total zero. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,total.",
+      "reference_sql": "WITH grouped AS (SELECT UF AS uf, sum(UTI_NEONATAL_EXIST) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND UF != '' GROUP BY UF) SELECT uf,total FROM grouped WHERE total = (SELECT min(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 50,
+      "original_question": "Qual é a quantidade de leitos existentes por estado na competência mais recente?",
+      "question": "Qual a soma de LEITOS_EXISTENTES por UF não vazia na maior COMP global? Retorne todas as UFs presentes.",
+      "reference_sql": "SELECT UF AS uf, sum(LEITOS_EXISTENTES) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND UF != '' GROUP BY UF",
+      "columns": [
+        "uf",
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 53,
+      "original_question": "Qual tipo de unidade (Hospital Geral, Pronto Socorro, etc) possui maior volume de leitos?",
+      "question": "Qual DS_TIPO_UNIDADE não vazio tem maior soma de LEITOS_EXISTENTES na maior COMP global? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: tipo,total.",
+      "reference_sql": "WITH grouped AS (SELECT DS_TIPO_UNIDADE AS tipo, sum(LEITOS_EXISTENTES) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND DS_TIPO_UNIDADE != '' GROUP BY tipo) SELECT tipo,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "tipo",
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 54,
+      "original_question": "Qual é a distribuição de especialidades de UTI (Adulto, Pediátrica, Neonatal, Coronariana, Queimados)?",
+      "question": "Retorne uma linha com as somas de UTI_ADULTO_EXIST, UTI_PEDIATRICO_EXIST, UTI_NEONATAL_EXIST, UTI_CORONARIANA_EXIST e UTI_QUEIMADO_EXIST nessa ordem, na maior COMP global de leitos.",
+      "reference_sql": "SELECT sum(UTI_ADULTO_EXIST) AS UTI_ADULTO_EXIST, sum(UTI_PEDIATRICO_EXIST) AS UTI_PEDIATRICO_EXIST, sum(UTI_NEONATAL_EXIST) AS UTI_NEONATAL_EXIST, sum(UTI_CORONARIANA_EXIST) AS UTI_CORONARIANA_EXIST, sum(UTI_QUEIMADO_EXIST) AS UTI_QUEIMADO_EXIST FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos)",
+      "columns": [
+        "UTI_ADULTO_EXIST",
+        "UTI_PEDIATRICO_EXIST",
+        "UTI_NEONATAL_EXIST",
+        "UTI_CORONARIANA_EXIST",
+        "UTI_QUEIMADO_EXIST"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 56,
+      "original_question": "Qual é o tipo de gestão predominante (Pública, Privada, Filantrópica) nas unidades de saúde?",
+      "question": "Qual código TP_GESTAO não vazio reúne mais CNES distintos não vazios na maior COMP global de leitos? Retorne o código, sem classificá-lo como público, privado ou filantrópico. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: gestao,total.",
+      "reference_sql": "WITH grouped AS (SELECT TP_GESTAO AS gestao, uniqExact(CNES) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND TP_GESTAO != '' AND CNES != '' GROUP BY gestao) SELECT gestao,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "gestao",
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "TP_GESTAO não é classificação de natureza jurídica. Pergunta revisada para códigos reais.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 57,
+      "original_question": "Quantos leitos SUS existem em estabelecimentos da iniciativa privada (parcerias)?",
+      "question": "Qual a soma de LEITOS_SUS, na maior COMP global de leitos, em linhas cujo código NATUREZA_JURIDICA, após remover espaços externos, começa com '2' ou '3'? Não use TP_GESTAO para esse filtro.",
+      "reference_sql": "SELECT sum(LEITOS_SUS) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND (startsWith(trimBoth(NATUREZA_JURIDICA),'2') OR startsWith(trimBoth(NATUREZA_JURIDICA),'3'))",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "Pergunta revisada para filtro explícito de códigos. Não equivale automaticamente à formulação original sobre iniciativa privada; revisar classificação jurídica da fonte antes de interpretar como setor privado.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 58,
+      "original_question": "Qual estado tem o maior percentual de leitos SUS em relação ao total (maior compromisso público)?",
+      "question": "Qual UF não vazia tem maior percentual da soma de LEITOS_SUS sobre LEITOS_EXISTENTES na maior COMP global? Considere somente UFs cuja soma de LEITOS_EXISTENTES seja positiva. Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,percentual.",
+      "reference_sql": "WITH grouped AS (SELECT UF AS uf, 100.0 * sum(LEITOS_SUS) / sum(LEITOS_EXISTENTES) AS percentual FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND UF != '' GROUP BY UF HAVING sum(LEITOS_EXISTENTES) > 0) SELECT uf,percentual FROM grouped WHERE percentual = (SELECT max(percentual) FROM grouped)",
+      "columns": [
+        "uf",
+        "percentual"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {
+          "1": {
+            "absolute_tolerance": 0.005
+          }
+        }
+      }
+    },
+    {
+      "id": 59,
+      "original_question": "Qual é a distribuição de capacidade de leitos entre regiões (Norte, Nordeste, Centro-Oeste, Sudeste, Sul)?",
+      "question": "Retorne REGIAO, soma de LEITOS_EXISTENTES e soma de LEITOS_SUS para todas as regiões não vazias na maior COMP global de leitos.",
+      "reference_sql": "SELECT REGIAO AS regiao, sum(LEITOS_EXISTENTES) AS existentes, sum(LEITOS_SUS) AS sus FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND REGIAO != '' GROUP BY REGIAO",
+      "columns": [
+        "regiao",
+        "existentes",
+        "sus"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 60,
+      "original_question": "Qual município possui maior quantidade absoluta de leitos existentes na competência mais recente?",
+      "question": "Qual combinação de UF e código CO_IBGE não vazios tem maior soma de LEITOS_EXISTENTES na maior COMP global? Inclua todos os empatados. Retorne somente estas colunas, nesta ordem: uf,municipio,total.",
+      "reference_sql": "WITH grouped AS (SELECT UF AS uf, CO_IBGE AS municipio, sum(LEITOS_EXISTENTES) AS total FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND UF != '' AND CO_IBGE != '' GROUP BY UF,CO_IBGE) SELECT uf,municipio,total FROM grouped WHERE total = (SELECT max(total) FROM grouped)",
+      "columns": [
+        "uf",
+        "municipio",
+        "total"
+      ],
+      "expected_datasets": [
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 61,
+      "original_question": "Em quantos municípios há notificações de SRAG e também UBS cadastradas?",
+      "question": "Quantos códigos positivos de município de notificação de SRAG também aparecem na base UBS com CNES positivo? Conte municípios distintos por igualdade dos códigos.",
+      "reference_sql": "SELECT count() AS total FROM (SELECT DISTINCT co_mun_not AS municipio FROM srag WHERE co_mun_not > 0) s INNER JOIN (SELECT DISTINCT ibge AS municipio FROM atencao_basica WHERE ibge > 0 AND cnes > 0) u ON s.municipio = u.municipio",
+      "columns": [
+        "total"
+      ],
+      "expected_datasets": [
+        "surtos-srag",
+        "atencao-basica"
+      ],
+      "expected_relationships": [
+        "srag_ubs_municipio_notificacao"
+      ],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 62,
+      "original_question": "Quais municípios possuem maior número de notificações de SRAG e quantas UBS existem em cada um?",
+      "question": "Liste todos os municípios positivos presentes em SRAG e UBS, com número de linhas de notificações e número de CNES distintos positivos. Ordene por notificações decrescentes e código municipal crescente, sem limitar a quantidade de linhas.",
+      "reference_sql": "WITH s AS (SELECT co_mun_not AS municipio, count() AS notificacoes FROM srag WHERE co_mun_not > 0 GROUP BY municipio), u AS (SELECT ibge AS municipio, uniqExact(cnes) AS ubs FROM atencao_basica WHERE ibge > 0 AND cnes > 0 GROUP BY municipio) SELECT s.municipio, s.notificacoes, u.ubs FROM s INNER JOIN u ON s.municipio=u.municipio ORDER BY s.notificacoes DESC,s.municipio ASC",
+      "columns": [
+        "municipio",
+        "notificacoes",
+        "ubs"
+      ],
+      "expected_datasets": [
+        "surtos-srag",
+        "atencao-basica"
+      ],
+      "expected_relationships": [
+        "srag_ubs_municipio_notificacao"
+      ],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": true,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 63,
+      "original_question": "Quais estados possuem simultaneamente registros de vacinação contra a COVID-19 e leitos de UTI na competência mais recente, e quais são os respectivos totais?",
+      "question": "Para todas as UFs não vazias comuns à vacinação e aos leitos, retorne UF, contagem de registros por UF de residência em toda a vacinação carregada e soma de UTI_TOTAL_EXIST na maior COMP global dos leitos. Inclua somente UFs com soma de UTI positiva; agregue antes de juntar.",
+      "reference_sql": "WITH v AS (SELECT paciente_endereco_uf AS uf, count() AS doses FROM vacinacao WHERE paciente_endereco_uf != '' GROUP BY uf), b AS (SELECT UF AS uf, sum(UTI_TOTAL_EXIST) AS leitos FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND UF != '' GROUP BY UF HAVING sum(UTI_TOTAL_EXIST)>0) SELECT v.uf,v.doses,b.leitos FROM v INNER JOIN b ON v.uf=b.uf",
+      "columns": [
+        "uf",
+        "doses",
+        "leitos"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao",
+        "leitos"
+      ],
+      "expected_relationships": [
+        "vacinacao_leitos_uf"
+      ],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      }
+    },
+    {
+      "id": 64,
+      "original_question": "Compare o número de doses registradas contra a COVID-19 com a quantidade de leitos de UTI por estado.",
+      "question": "Para todas as UFs não vazias comuns à vacinação e aos leitos, retorne UF, contagem de registros por UF de residência em toda a vacinação carregada e soma de UTI_TOTAL_EXIST na maior COMP global dos leitos. Inclua somente UFs com soma de UTI positiva; agregue antes de juntar.",
+      "reference_sql": "WITH v AS (SELECT paciente_endereco_uf AS uf, count() AS doses FROM vacinacao WHERE paciente_endereco_uf != '' GROUP BY uf), b AS (SELECT UF AS uf, sum(UTI_TOTAL_EXIST) AS leitos FROM leitos WHERE COMP = (SELECT max(COMP) FROM leitos) AND UF != '' GROUP BY UF HAVING sum(UTI_TOTAL_EXIST)>0) SELECT v.uf,v.doses,b.leitos FROM v INNER JOIN b ON v.uf=b.uf",
+      "columns": [
+        "uf",
+        "doses",
+        "leitos"
+      ],
+      "expected_datasets": [
+        "covid-19-vacinacao",
+        "leitos"
+      ],
+      "expected_relationships": [
+        "vacinacao_leitos_uf"
+      ],
+      "expected_behavior": "answer",
+      "implementation_supported": true,
+      "review_status": "draft",
+      "specification": "",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "repeat_of": 63
+    },
+    {
+      "id": 65,
+      "original_question": "Qual é a quantidade de leitos de UTI SUS nos estados com maior número de notificações de SRAG?",
+      "question": "Qual é a quantidade de leitos de UTI SUS nos estados com maior número de notificações de SRAG?",
+      "reference_sql": null,
+      "columns": [],
+      "expected_datasets": [
+        "surtos-srag",
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "limitation",
+      "implementation_supported": false,
+      "review_status": "draft",
+      "specification": "Relacionamento não implementado; teste de limitação, não acurácia numérica. Q68 também exige limiares de alto/baixo e harmonização municipal.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "expected_missing_data": [
+        "relacionamento semântico validado entre as bases selecionadas"
+      ]
+    },
+    {
+      "id": 66,
+      "original_question": "Qual estado teve mais hospitalizações por SRAG e qual era sua quantidade de leitos existentes na competência mais recente?",
+      "question": "Qual estado teve mais hospitalizações por SRAG e qual era sua quantidade de leitos existentes na competência mais recente?",
+      "reference_sql": null,
+      "columns": [],
+      "expected_datasets": [
+        "surtos-srag",
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "limitation",
+      "implementation_supported": false,
+      "review_status": "draft",
+      "specification": "Relacionamento não implementado; teste de limitação, não acurácia numérica. Q68 também exige limiares de alto/baixo e harmonização municipal.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "expected_missing_data": [
+        "relacionamento semântico validado entre as bases selecionadas"
+      ]
+    },
+    {
+      "id": 67,
+      "original_question": "Qual é a relação entre quantidade de UBS e número de registros de vacinação contra a COVID-19 por estado?",
+      "question": "Qual é a relação entre quantidade de UBS e número de registros de vacinação contra a COVID-19 por estado?",
+      "reference_sql": null,
+      "columns": [],
+      "expected_datasets": [
+        "atencao-basica",
+        "covid-19-vacinacao"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "limitation",
+      "implementation_supported": false,
+      "review_status": "draft",
+      "specification": "Relacionamento não implementado; teste de limitação, não acurácia numérica. Q68 também exige limiares de alto/baixo e harmonização municipal.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "expected_missing_data": [
+        "relacionamento semântico validado entre as bases selecionadas"
+      ]
+    },
+    {
+      "id": 68,
+      "original_question": "Quais municípios combinam alto número de notificações de SRAG, UBS cadastradas e baixa disponibilidade de leitos?",
+      "question": "Quais municípios combinam alto número de notificações de SRAG, UBS cadastradas e baixa disponibilidade de leitos?",
+      "reference_sql": null,
+      "columns": [],
+      "expected_datasets": [
+        "surtos-srag",
+        "atencao-basica",
+        "leitos"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "limitation",
+      "implementation_supported": false,
+      "review_status": "draft",
+      "specification": "Relacionamento não implementado; teste de limitação, não acurácia numérica. Q68 também exige limiares de alto/baixo e harmonização municipal.",
+      "comparison": {
+        "ordered": false,
+        "absolute_tolerance": 0.0,
+        "relative_tolerance": 0.0,
+        "columns": {}
+      },
+      "expected_missing_data": [
+        "relacionamento semântico validado entre as bases selecionadas"
+      ]
+    }
+  ]
+}

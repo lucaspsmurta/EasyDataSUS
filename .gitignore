@@ -50,9 +50,9 @@ desktop.ini
 .directory
 .trash*
 
-# Local documentation and experiments
+# Local documentation and cleanup metadata
 /docs/
-/experimentos/
+/experimentos/manifesto_dissertacao.json
 
 # Data files
 data/datasets/*/*.csv
