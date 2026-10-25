@@ -1,0 +1,25 @@
+{
+  "scope": "Revisão manual dos perfis usuário e técnico, rodadas uniformes r1",
+  "files": [
+    {
+      "path": "avaliacao_manual_template.xlsx",
+      "bytes": 201500,
+      "sha256": "6dde16a9b2c4fcd06418634dde9563e8f20c6ccfd926558abe0b674165b05f00"
+    },
+    {
+      "path": "consolidacao_revisao_manual.json",
+      "bytes": 1798398,
+      "sha256": "10a5ee3733c78de4d1a421f68a17a2ad43376f94df1605ba75bc1223b55ff1bb"
+    },
+    {
+      "path": "Fichas_revisao_dois_perfis_preenchida.xlsx",
+      "bytes": 215811,
+      "sha256": "4c27fe1baf7b32e5fcc2384a9700b30c55bb53b24f7d28df9e870e75e7b858ed"
+    },
+    {
+      "path": "README.md",
+      "bytes": 1376,
+      "sha256": "ba95c2e36d52d2e2ca2abeebbb36865a44c7924e67e497b8d9a5ec3bbe5f2cd6"
+    }
+  ]
+}

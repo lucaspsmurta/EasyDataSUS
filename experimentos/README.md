@@ -2,7 +2,7 @@
 
 Esta pasta pode ser versionada no Git. Os resultados e as referências permanecem nos caminhos usados pelos scripts e pela dissertação; a subpasta `docs/` reúne os catálogos e a documentação necessários para sua consulta e reprodução.
 
-São 37 arquivos de evidência e 19 arquivos de documentação, além deste índice e do manifesto. Nem todos são resultados principais: as seções abaixo distinguem resultados, referências e diagnósticos de apoio.
+O pacote histórico reúne 37 arquivos de evidência e 19 arquivos de documentação, além do índice e do manifesto original. A revisão manual posterior possui pasta e manifesto próprios, descritos abaixo. Nem todos são resultados principais: as seções abaixo distinguem resultados, referências e diagnósticos de apoio.
 
 As assinaturas dos arquivos estão no [manifesto do pacote](MANIFESTO.json). Os resultados foram preservados sem reclassificação. A limpeza retirou checkpoints parciais, arquivos deprecated, diagnósticos substituídos e resultados de catálogos anteriores que não sustentam a análise atual.
 
@@ -76,3 +76,7 @@ Copy-Item -LiteralPath experimentos/docs -Destination . -Recurse
 ```
 
 Os resultados já estão em seus caminhos originais. A documentação local em `/docs/` continua ignorada pelo Git. Para novas execuções, use nomes novos e selecione para commit somente os resultados que pretende preservar. O arquivo local `manifesto_dissertacao.json` registra a limpeza anterior e permanece ignorado; o manifesto público é [MANIFESTO.json](MANIFESTO.json).
+
+## Revisão manual dos dois perfis
+
+A pasta [avaliacao_manual](avaliacao_manual/README.md) reúne a ficha preenchida, o template sem julgamentos e a consolidação das rodadas uniformes r1. Esses materiais são citados nos capítulos 4 e 6 e não modificam os indicadores automáticos nem o manifesto histórico.
