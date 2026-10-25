@@ -38,7 +38,7 @@
     "vacina_descricao_dose": {
       "tipo": "String",
       "descricao": "Descrição da dose",
-      "exemplos": ["1ª dose", "2ª dose", "Dose de reforço", "Reforço 1", "Reforço 2"]
+      "exemplos": ["1ª Dose", "2ª Dose", "Reforço", "1º Reforço", "2º Reforço", "3º Reforço"]
     },
     "vacina_lote": {
       "tipo": "String",

@@ -43,6 +43,7 @@ class OllamaProvider(LLMProvider):
                 options = {
                     "temperature": 0.3 if temperature is None else temperature,
                     "top_p": 1,
+                    "num_ctx": int(os.getenv('OLLAMA_NUM_CTX', '8192')),
                 }
                 if num_predict is not None:
                     options["num_predict"] = num_predict
@@ -67,8 +68,15 @@ class OllamaProvider(LLMProvider):
                 
                 result = response_json.get("response", "")
                 record('llm_response', model=self.model, response=result,
+                       options=dict(options), prompt_characters=len(prompt),
                        done_reason=response_json.get('done_reason'),
-                       eval_count=response_json.get('eval_count'))
+                       eval_count=response_json.get('eval_count'),
+                       timeout_s=effective_timeout,
+                       total_duration_ns=response_json.get('total_duration'),
+                       load_duration_ns=response_json.get('load_duration'),
+                       prompt_eval_duration_ns=response_json.get('prompt_eval_duration'),
+                       eval_duration_ns=response_json.get('eval_duration'),
+                       prompt_eval_count=response_json.get('prompt_eval_count'))
                 logger.debug(f"Resposta extraída ({len(result)} chars): {repr(result[:150])}")
                 
                 return result if result else ""
@@ -82,7 +90,9 @@ class OllamaProvider(LLMProvider):
                     
             except requests.exceptions.Timeout as e:
                 last_error = str(e)
-                logger.warning(f"[Tentativa {attempt}] Timeout ao conectar Ollama (timeout={effective_timeout}s)")
+                record('llm_timeout', model=self.model, timeout_s=effective_timeout,
+                       attempt=attempt, prompt_characters=len(prompt), error=str(e))
+                logger.warning(f"[Tentativa {attempt}] Tempo esgotado aguardando Ollama (timeout={effective_timeout}s)")
                 if attempt < effective_retries:
                     logger.info(f"Aguardando {self.retry_delay}s antes de retry...")
                     time.sleep(self.retry_delay)

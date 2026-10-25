@@ -12,6 +12,9 @@ from metadata.loader import load_metadata
 from services.relationship_service import Relationship, relationship_service
 from services.sql_service import extract_sql
 from services.analytical_contract import SQL_INSTRUCTIONS, contract_errors, prepare_sql, normalize
+from services.question_intent import intent_context
+from services.domain_requirements import domain_errors, domain_context
+from services.sql_repair import generation_attempts, repair_prompt
 from services.generation_diagnostics import record
 
 logger = logging.getLogger(__name__)
@@ -235,6 +238,8 @@ class MultibaseService:
         for dataset_id in selected_datasets:
             config = get_dataset_config(dataset_id)
             metadata = context["metadata"][dataset_id]
+            from services.sql_service import _get_sql_rules_for_dataset
+            prompt_parts.append(_get_sql_rules_for_dataset(dataset_id, metadata))
             columns = metadata.get("colunas_principais") or metadata.get("columns") or {}
             prompt_parts.append(
                 f"- FROM {get_table_name(dataset_id)} | {config.get('dominio', '')}"
@@ -248,10 +253,13 @@ class MultibaseService:
                 if dataset == dataset_id
             }
             for name, detail in columns.items():
-                if name.lower() in join_fields or re.search(r"\b" + re.escape(name) + r"\b", question, re.IGNORECASE):
+                if isinstance(detail, dict):
                     description = detail.get("description") or detail.get("descricao") or ""
                     dtype = detail.get("type") or detail.get("tipo") or ""
                     prompt_parts.append(f"  Campo de referência: {get_table_name(dataset_id)}.{name} ({dtype}): {description}")
+                    values = detail.get('mapeamento') or detail.get('exemplos') or detail.get('examples')
+                    if values:
+                        prompt_parts.append(f"  Valores documentados de {name}: {values}")
 
         prompt_parts.append("")
         prompt_parts.append("Relacionamentos permitidos:")
@@ -281,6 +289,8 @@ class MultibaseService:
         prompt_parts.append("- Dialeto: ClickHouse")
         prompt_parts.append("- Retorne apenas SQL")
         prompt_parts.append(SQL_INSTRUCTIONS)
+        prompt_parts.append(intent_context(question))
+        prompt_parts.append(domain_context(question, selected_datasets))
         prompt_parts.append(f"Pergunta a responder (preserve os filtros de cada entidade): {question}")
         filter_hints = self._positive_code_filter_hints(question, selected_datasets, relationships)
         if filter_hints:
@@ -341,9 +351,9 @@ class MultibaseService:
         try:
             response = llm.generate(
                 prompt,
-                num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")),
+                num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "1024")),
                 temperature=0.0,
-                timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")),
+                timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "600")),
                 max_retries=1,
             )
         except Exception as exc:
@@ -351,10 +361,13 @@ class MultibaseService:
             record('sql_generation_exception', error=str(exc))
             return None, "llm_error"
 
-        for attempt in range(2):
+        history = []
+        attempts = generation_attempts()
+        for attempt in range(attempts):
             try:
                 sql = prepare_sql(extract_sql(response), question)
                 errors = contract_errors(sql, question, self._allowed_columns_by_dataset(selected_datasets))
+                errors.extend(domain_errors(sql, question, selected_datasets))
                 sql = self.canonicalize_sql_identifiers(sql, selected_datasets)
                 validation = self.validate_sql(sql, selected_datasets, relationships)
                 errors.extend(validation.errors)
@@ -366,11 +379,12 @@ class MultibaseService:
             if not errors:
                 return sql, "llm"
             logger.warning("SQL multibase rejeitada na tentativa %s: %s", attempt + 1, "; ".join(errors))
-            if attempt == 0:
+            history.append({'sql': sql, 'errors': list(errors)})
+            if attempt < attempts - 1:
                 try:
-                    response = llm.generate(prompt + "\nCorrija: " + str(sql) + "\n" + "; ".join(errors),
-                        num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")), temperature=0.0,
-                        timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")), max_retries=1)
+                    response = llm.generate(repair_prompt(prompt, history),
+                        num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "1024")), temperature=0.0,
+                        timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "600")), max_retries=1)
                 except Exception as exc:
                     record('sql_generation_exception', error=str(exc))
                     break
@@ -528,7 +542,7 @@ ORDER BY s.total_srag DESC, s.ibge ASC
                 else:
                     names = []
                 sources[alias.lower()] = {name.lower(): name for name in names}
-            output_aliases = {node.alias.lower() for node in scope.expression.expressions if node.alias}
+            output_aliases = {node.alias.lower(): node.alias for node in scope.expression.expressions if node.alias}
             for column in scope.columns:
                 key = column.name.lower()
                 if column.table:
@@ -536,6 +550,7 @@ ORDER BY s.total_srag DESC, s.ibge ASC
                 else:
                     # Preserve explicit projection aliases.
                     if key in output_aliases and not column.find_ancestor(exp.Alias):
+                        column.set('this', exp.to_identifier(output_aliases[key]))
                         # Qualify WHERE fields to prevent aggregate-alias substitution.
                         owners = [(alias, names[key]) for alias, names in sources.items() if key in names]
                         where = scope.expression.args.get("where")
@@ -669,11 +684,36 @@ ORDER BY s.total_srag DESC, s.ibge ASC
 
             if len(selected_datasets) == 1 and self._same_base_grouped_join(parsed, join_node):
                 continue
+            if len(selected_datasets) == 1 and self._scalar_filter_join(parsed, join_node):
+                continue
 
             if normalized not in allowed_pairs:
                 return SqlValidationResult(False, physical_tables, joins, list(cte_names), [f"JOIN não autorizado: {join_text}"])
 
         return SqlValidationResult(True, physical_tables, joins, list(cte_names), [])
+
+    @staticmethod
+    def _scalar_filter_join(parsed, join):
+        """An inner equality against a scalar aggregate cannot multiply left rows."""
+        from sqlglot.optimizer.scope import Scope, traverse_scope
+        if join.args.get('side') or str(join.args.get('kind') or '').upper() not in ('', 'INNER'):
+            return False
+        on=join.args.get('on')
+        if not isinstance(on, exp.EQ) or not isinstance(join.this, exp.Table):
+            return False
+        parent=join.find_ancestor(exp.Select)
+        scope=next((s for s in traverse_scope(parsed) if s.expression is parent), None)
+        source=scope.sources.get(join.this.alias_or_name) if scope else None
+        if not isinstance(source, Scope) or not isinstance(source.expression, exp.Select):
+            return False
+        query=source.expression
+        if query.args.get('group') or len(query.expressions)!=1:
+            return False
+        projection=query.expressions[0]
+        if not isinstance(projection.unalias(), exp.AggFunc):
+            return False
+        return any(isinstance(c,exp.Column) and c.table==join.this.alias_or_name
+                   and c.name==projection.alias_or_name for c in (on.this,on.expression))
 
     @staticmethod
     def _same_base_grouped_join(parsed, join):
@@ -814,7 +854,9 @@ ORDER BY s.total_srag DESC, s.ibge ASC
                 return None
 
             if not is_distinct and not any(isinstance(node, exp.AggFunc) for node in query.walk()):
-                return None
+                # GROUP BY only the join key is also a deduplicated relation.
+                if len(group.expressions) != 1 or not isinstance(group.expressions[0], exp.Column):
+                    return None
 
             for expression in query.expressions:
                 if isinstance(expression, exp.Alias):

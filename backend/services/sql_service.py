@@ -10,6 +10,9 @@ sys.path.insert(0, str(Path(__file__).parent.parent))
 
 from services.analytical_contract import SQL_INSTRUCTIONS, contract_errors, prepare_sql
 from services.generation_diagnostics import record
+from services.question_intent import analytical_intent, intent_context
+from services.domain_requirements import domain_errors, domain_context
+from services.sql_repair import generation_attempts, repair_prompt
 from services.safe_fallback import fallback_sql
 from llm.router import get_llm
 from config.datasets import get_table_name, get_dataset_config
@@ -243,6 +246,9 @@ def _format_columns_from_schema(schema: dict) -> str:
         formatted_examples = _format_examples(exemplos)
         if formatted_examples:
             colunas_info += f" → Exemplos: {formatted_examples}"
+        mapping = col_info.get('mapeamento') or col_info.get('mapping')
+        if mapping:
+            colunas_info += ' → Códigos e significados: ' + json.dumps(mapping, ensure_ascii=False)
         colunas_info += "\n"
     
     return colunas_info
@@ -396,12 +402,14 @@ Regras para vacinação:
 11. Respeite maiúsculas/minúsculas de estados ('SP', não 'sp')
 12. Igualdade literal usa =; busca parcial sem distinção de maiúsculas usa positionCaseInsensitiveUTF8.
 13. Só use LIMIT quando explicitamente solicitado; preserve todos os empates.
+14. Para comparar contagens de categorias da mesma base, prefira countIf em uma única agregação. Isso preserva grupos com uma categoria ausente e evita FULL JOIN desnecessário.
+15. Faixas etárias devem aparecer como dimensão identificável na saída junto das demais dimensões pedidas, como estado. Não omita a faixa ao usar UNION ALL.
         """,
         "leitos": """
 Regras para leitos:
 1. Se pergunta menciona "leitos" genericamente → use LEITOS_EXISTENTES
 2. Se pergunta menciona "leitos SUS" → use LEITOS_SUS
-3. Se pergunta menciona "UTI" → use UTI_TOTAL_EXIST ou UTI_TOTAL_SUS
+3. UTI sem restrição ao SUS usa UTI_TOTAL_EXIST. UTI_TOTAL_SUS somente quando a medida pedida se restringe ao SUS; mencionar DataSUS não cria esse filtro.
 4. Se pergunta menciona "UTI adulto" → use UTI_ADULTO_EXIST ou UTI_ADULTO_SUS
 5. Se pergunta menciona "UTI pediátrica" → use UTI_PEDIATRICO_EXIST ou UTI_PEDIATRICO_SUS
 6. Se pergunta menciona "UTI neonatal" → use UTI_NEONATAL_EXIST ou UTI_NEONATAL_SUS
@@ -418,6 +426,11 @@ Regras para leitos:
 17. Não limite resultados sem pedido explícito.
 18. Leitos são fotografias por competência: ao agregar capacidade sem período explícito, filtre COMP = (SELECT MAX(COMP) FROM leitos)
 19. Se a pergunta mencionar competência mais recente, o filtro pela maior COMP é obrigatório
+20. Estabelecimentos distintos são identificados por CNES, não pelo nome.
+21. Filtros por código de natureza jurídica usam NATUREZA_JURIDICA, nunca DESC_NATUREZA_JURIDICA.
+22. Modalidades de UTI são medidas em colunas UTI_ADULTO_EXIST, UTI_PEDIATRICO_EXIST, UTI_NEONATAL_EXIST, UTI_CORONARIANA_EXIST e UTI_QUEIMADO_EXIST, não categorias de tipo de unidade.
+23. Para extremos de somas por grupo: primeiro agregue em CTE, depois selecione da CTE onde a métrica = (SELECT MAX/MIN(métrica) FROM mesma_cte). Nunca faça MAX(SUM(...)) no mesmo nível.
+24. COMP = (SELECT MAX(COMP) FROM leitos) deve valer para todas as alternativas de filtros: use AND (alternativa1 OR alternativa2).
         """,
     "surtos-srag": """
 Regras para SRAG:
@@ -430,16 +443,18 @@ Regras para SRAG:
 7. Série mensal usa ano e mês; semana epidemiológica usa SEM_NOT com o ano de DT_NOTIFIC.
 8. Para distribuição por categoria, use GROUP BY com COUNT(*)
 9. Não assuma nomes de municípios quando a base só tiver código IBGE
+10. PCR positivo: pcr_sars2 = 1 para SARS-CoV-2, pos_pcrflu = 1 para influenza, pcr_vsr = 1 para vírus sincicial respiratório. Não invente outros campos.
+11. Para faixas etárias em anos, converta NU_IDADE_N conforme TP_IDADE: dias / 365.25, meses / 12, anos sem conversão. Exclua unidades desconhecidas; não classifique ausentes como uma faixa válida.
     """,
     "atencao-basica": """
 Regras para atenção básica:
-1. Se perguntar por quantidade de UBS, use COUNT(*)
-2. Se perguntar por estado, use UF
-3. Se perguntar por município, use IBGE
+1. Quantidade de UBS distintas usa uniqExact(cnes) com cnes > 0; nome não identifica uma unidade. COUNT(*) somente para quantidade de registros.
+2. Se perguntar por estado, use UF (código numérico).
+3. Se perguntar por município, use IBGE. NOME é nome da UBS, não da cidade. Não procure nomes de cidades em NOME; resolver uma cidade exige mapeamento municipal documentado.
 4. Se perguntar por nome da unidade, use NOME
 5. Se perguntar por bairro, use BAIRRO
 6. Se perguntar por geolocalização, use LATITUDE e LONGITUDE
-7. Não use SUM() para contar unidades; use COUNT(*)
+7. Não use SUM() para contar unidades. Agrupe municípios pelo identificador IBGE, bairros por município e UF, sem unir homônimos.
 8. Não limite resultados sem pedido explícito.
     """,
     }
@@ -504,6 +519,7 @@ def generate_sql(
     
     # Regras específicas do dataset.
     dataset_rules = _get_sql_rules_for_dataset(dataset, schema_info)
+    record('analytical_intent', **analytical_intent(question))
 
     prompt = f"""Você gera SQL ClickHouse. Responda apenas SQL.
 {SQL_INSTRUCTIONS}
@@ -513,25 +529,31 @@ Colunas e significados:
 {colunas_info}
 Regras do domínio:
 {dataset_rules}
+{intent_context(question)}
+{domain_context(question, [dataset])}
 Pergunta: {question}
 """
 
     try:
         response = llm.generate(
             prompt,
-            num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")),
+            num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "1024")),
             temperature=0.0,
-            timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")),
+            timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "600")),
             max_retries=1,
         )
         logger.debug(f"Resposta LLM (primeira 200 chars): {response[:200]}")
         
         sql = extract_sql(response)
         errors = []
-        for attempt in range(2):
+        history = []
+        attempts = generation_attempts()
+        for attempt in range(attempts):
             try:
                 sql = prepare_sql(sql, question) if sql else None
                 errors = contract_errors(sql, question, schema_columns) if sql else ["SQL vazio"]
+                if sql:
+                    errors.extend(domain_errors(sql, question, [dataset]))
                 if sql and not validate_sql_syntax(sql, dataset, question):
                     errors.append("Consulta inválida ou incompatível com a intenção")
                 if sql:
@@ -547,12 +569,12 @@ Pergunta: {question}
             if not errors:
                 break
             logger.warning("SQL rejeitada na tentativa %s: %s", attempt + 1, "; ".join(errors))
-            if attempt == 0:
+            history.append({'sql': sql, 'errors': list(errors)})
+            if attempt < attempts - 1:
                 response = llm.generate(
-                    prompt + "\nCorrija a tentativa anterior:\n" + str(sql) +
-                    "\nProblemas: " + "; ".join(errors),
-                    num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "512")),
-                    temperature=0.0, timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "180")), max_retries=1,
+                    repair_prompt(prompt, history),
+                    num_predict=int(os.getenv("OLLAMA_SQL_NUM_PREDICT", "1024")),
+                    temperature=0.0, timeout_s=int(os.getenv("OLLAMA_SQL_TIMEOUT", "600")), max_retries=1,
                 )
                 sql = extract_sql(response)
         if errors:

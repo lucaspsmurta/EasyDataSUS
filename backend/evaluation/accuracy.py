@@ -116,8 +116,26 @@ def compare_rows(expected, actual, rule):
         if counts[k]:
             candidates.append(row)
             counts[k]-=1
+    # Partition on exact columns before matching tolerant numeric values.
+    width = len(expected[0]) if expected else 0
+    policies = [dict(rule, **rule.get('columns', {}).get(str(i), {})) for i in range(width)]
+    exact = [i for i,p in enumerate(policies)
+             if not p.get('absolute_tolerance', 0) and not p.get('relative_tolerance', 0)]
+    def partition(row):
+        if not isinstance(row, (list, tuple)) or len(row) != width:
+            return ('invalid_width',)
+        values=[]
+        for i in exact:
+            v=normalized(row[i], policies[i].get('normalization'))
+            values.append(('number', Decimal(str(v))) if number(v) else (type(v).__name__, key(v)))
+        return tuple(values)
+    if len(exact) == width:
+        return Counter(partition(r) for r in remaining) == Counter(partition(r) for r in candidates)
+    buckets={}
+    for j,b in enumerate(candidates):
+        buckets.setdefault(partition(b), []).append(j)
     # Augmenting paths, not greedy matching: tolerances can create overlapping matches.
-    adjacency=[[j for j,b in enumerate(candidates) if same(a,b)] for a in remaining]
+    adjacency=[[j for j in buckets.get(partition(a), []) if same(a,candidates[j])] for a in remaining]
     matched={}
     def augment(i, seen):
         for j in adjacency[i]:
@@ -146,6 +164,31 @@ def limitation_matches(response, case):
             and not response.get("relationships"))
 
 
+def align_result(rows, actual_columns, expected_columns, policy):
+    """Apply a declared output contract, never infer mappings from expected values."""
+    aliases = policy.get('aliases', {})
+    indices=[]
+    for name in expected_columns:
+        allowed={name.casefold(), *(s.casefold() for s in aliases.get(name, []))}
+        found=[i for i,col in enumerate(actual_columns) if str(col).casefold() in allowed]
+        if len(found)!=1 or found[0] in indices:
+            return None
+        indices.append(found[0])
+    if not policy.get('allow_extra_columns', False) and len(indices)!=len(actual_columns):
+        return None
+    result=[]
+    for row in rows:
+        if not isinstance(row, (list, tuple)) or len(row)!=len(actual_columns):
+            return None
+        projected=[]
+        for name,index in zip(expected_columns,indices):
+            value=row[index]
+            mapping=policy.get('value_aliases', {}).get(name, {})
+            projected.append(mapping.get(value,value) if isinstance(value,str) else value)
+        result.append(projected)
+    return result
+
+
 def score(case, response):
     if case["expected_behavior"]=="unresolved":
         return dict(status="reference_pending", result_correct=None)
@@ -156,9 +199,19 @@ def score(case, response):
     if not response.get("success"):
         return dict(status="technical_failure", result_correct=False)
     expected, actual = case["expected_rows"], response.get("data")
+    alignment = case.get('result_alignment')
+    strict_correct = compare_rows(expected, actual, case['comparison']) if alignment else None
+    alignment_failed = False
+    if alignment and not strict_correct and isinstance(actual, list):
+        aligned = align_result(actual, response.get('columns') or [], case['columns'], alignment)
+        alignment_failed = aligned is None
+        if not alignment_failed:
+            actual = aligned
     ok=compare_rows(expected,actual,case["comparison"])
     # Diagnostic only: never relax the score after observing a mismatch.
     reasons = []
+    if alignment_failed:
+        reasons.append('column_alignment_unresolved')
     if not isinstance(actual, (list, tuple)):
         reasons.append("invalid_result_shape")
     else:
@@ -172,6 +225,7 @@ def score(case, response):
         if not ok and not reasons:
             reasons.append("values_or_order_mismatch")
     return dict(status="correct" if ok else "incorrect", result_correct=ok,
+                **({'strict_result_correct': strict_correct, 'comparison_protocol': 'declared_alignment_v1'} if alignment else {}),
                 mismatch_reasons=reasons,
                 expected_row_count=len(case["expected_rows"]),
                 actual_row_count=len(response["data"]) if isinstance(response.get("data"),list) else None)
@@ -326,6 +380,13 @@ def run(args):
     if before!=bundle["snapshot"]: raise ValueError("Data/schema differs from reference snapshot")
     results=[]
     output=dict(reference_sha256=checksum,model=args.model,resolved_model=resolved_model,strategy=args.generation_strategy,
+                generation_configuration={
+                    'sql_timeout_s': int(os.getenv('OLLAMA_SQL_TIMEOUT','600')),
+                    'interpretation_timeout_s': int(os.getenv('OLLAMA_INTERPRETATION_TIMEOUT','120')),
+                    'sql_num_predict': int(os.getenv('OLLAMA_SQL_NUM_PREDICT','1024')),
+                    'num_ctx': int(os.getenv('OLLAMA_NUM_CTX','8192')),
+                    'max_sql_attempts': max(1,min(4,int(os.getenv('SQL_GENERATION_MAX_ATTEMPTS','3')))),
+                },
                 started_at=datetime.now(timezone.utc).isoformat(),reference_reviewed=reviewed,
                 valid_for_claims=False,results=results)
     write_new(progress_path,output)

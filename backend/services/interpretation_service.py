@@ -370,7 +370,7 @@ def interpret_result(
             prompt,
             num_predict=int(os.getenv("OLLAMA_INTERPRETATION_NUM_PREDICT", "128")),
             temperature=0.0,
-            timeout_s=int(os.getenv("OLLAMA_INTERPRETATION_TIMEOUT", "20")),
+            timeout_s=int(os.getenv("OLLAMA_INTERPRETATION_TIMEOUT", "120")),
             max_retries=1,
         )
         

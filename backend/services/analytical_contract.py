@@ -52,10 +52,10 @@ Contrato analítico (prevalece sobre exemplos):
 
 
 def prepare_sql(sql, question):
-    """Only a requested null-on-zero rewrite; never guess filters or grouping."""
+    """Protect analytical division from zero; never guess filters or grouping."""
     tree = parse_one(sql, read='clickhouse')
     q = normalize(question)
-    if 'nulo' in q or 'null' in q:
+    if 'nulo' in q or 'null' in q or re.search(r'percentual|porcentagem|percentagem|\brazao\b|para cada registro|registros.*por ubs', q):
         for division in tree.find_all(exp.Div):
             denominator = division.expression
             if not isinstance(denominator, exp.Nullif):
@@ -94,6 +94,13 @@ def contract_errors(sql, question, columns=()):
     errors = []
     # Technical field names explicitly requested must not disappear.
     used = {c.name.lower() for c in tree.find_all(exp.Column)}
+    if re.search(r'para cada registro|registros.*por ubs|\brazao\b', q) and not next(tree.find_all(exp.Div), None):
+        errors.append('Foi pedida uma razão: calcule numerador / NULLIF(denominador, 0), não apenas contagens separadas')
+    if 'faixa' in q and ('etaria' in q or 'idade' in q):
+        if isinstance(tree, exp.Union) and not any(
+                isinstance(projection.unalias(), exp.Literal) and projection.unalias().is_string
+                for select in tree.find_all(exp.Select) for projection in select.expressions):
+            errors.append('Cada grupo da UNION deve identificar a faixa etária na saída; não devolva contagens sem o rótulo da faixa')
     if (re.match(r'qual (?:e )?o percentual de linhas\b', q)
             and not re.search(r'\bpor\b|retorne (?:tambem|a contagem)|e (?:o total|a contagem)', q)
             and len(tree.expressions) != 1):
@@ -103,7 +110,9 @@ def contract_errors(sql, question, columns=()):
         scalars = {literal.this for literal in tree.find_all(exp.Literal) if not literal.is_string}
         if not scalars.intersection({'100', '100.0', '0.01'}):
             errors.append('Percentual exige escala 0 a 100, não apenas a razão; multiplique o numerador por 100.0')
-    if re.search(r'nao (?:em )?percentual', q) and re.search(r'\brazao\b', q):
+    ratio_only = (bool(re.search(r'\brazao\b|para cada registro|registros.*por ubs', q))
+                  and not re.search(r'percentual|porcentagem|percentagem', q))
+    if ratio_only or (re.search(r'nao (?:em )?percentual', q) and re.search(r'\brazao\b', q)):
         for multiplication in tree.find_all(exp.Mul):
             if any(isinstance(value, exp.Literal) and value.this in {'100','100.0'}
                    for value in (multiplication.this, multiplication.expression)):
@@ -135,28 +144,43 @@ def contract_errors(sql, question, columns=()):
         errors.append('LIMIT externo contradiz pedido de resultado completo/empates')
     if ('ano/mes' in q or 'ano e mes' in q) and 'year' not in sql.lower() and not re.search(r'%[Yy]|YYYY|toStartOfMonth', sql):
         errors.append('Agrupamento mensal deve preservar o ano')
-    if 'empatad' in q and tree.args.get('group') and not tree.args.get('having') and not tree.args.get('qualify'):
+    where = tree.args.get('where')
+    filtered_extreme = bool(where and any(
+        isinstance(node, exp.In) and node.args.get('query')
+        and next(node.args['query'].find_all(exp.Max, exp.Min), None)
+        and not next(node.args['query'].find_all(exp.Limit), None)
+        for node in where.walk()))
+    if ('empatad' in q and tree.args.get('group') and not tree.args.get('having')
+            and not tree.args.get('qualify') and not filtered_extreme):
         errors.append('Agregação simples não seleciona somente extremos empatados; use CTE e MAX/MIN')
     # Detect the common failed repair: remove LIMIT but leave the entire ranking.
     # Restrict to ordered outer queries without selection, windows or extrema of a metric.
     metric_extrema = [node for node in tree.find_all(exp.Max, exp.Min)
                       if not (isinstance(node.this, exp.Column) and node.this.name.lower() == 'comp')]
-    if ('empatad' in q and re.search(r'\bmaior|\bmenor', q) and tree.args.get('order')
+    if ('empatad' in q and re.search(r'\bmaior|\bmenor|\bmais registros|\bmais leitos|\bmais notificacoes', q) and tree.args.get('order')
             and not any(tree.args.get(k) for k in ('where', 'having', 'qualify', 'limit'))
             and not metric_extrema and not next(tree.find_all(exp.Window), None)):
         errors.append('ORDER BY apenas ordena o ranking; filtre a métrica pelo MAX/MIN global para retornar somente os extremos empatados')
     if isinstance(columns, dict):
         numeric = set()
+        textual = set()
         for column, info in columns.items():
             kind = str(info.get('type', info.get('tipo', ''))) if isinstance(info, dict) else str(info)
             if re.search(r'\b(?:U?Int\d*|Float\d*|Decimal\w*|BIGINT|INTEGER|SMALLINT|DOUBLE|NUMBER)\b', kind, re.I):
                 numeric.add(column.lower())
+            if re.search(r'\b(?:String|FixedString|VARCHAR|CHAR|TEXT)\b', kind, re.I):
+                textual.add(column.lower())
+        for comparison in tree.find_all(exp.EQ, exp.NEQ, exp.GT, exp.GTE, exp.LT, exp.LTE):
+            for field,literal in ((comparison.this,comparison.expression),(comparison.expression,comparison.this)):
+                if (isinstance(field,exp.Column) and field.name.lower() in textual
+                        and isinstance(literal,exp.Literal) and not literal.is_string):
+                    errors.append(f'{field.name} é textual: não compare diretamente com número. Use valores textuais documentados; não converta siglas de UF para números.')
         for comparison in tree.find_all(exp.EQ, exp.NEQ):
             for field, literal in ((comparison.this, comparison.expression), (comparison.expression, comparison.this)):
                 if (isinstance(field, exp.Column) and field.name.lower() in numeric
                         and isinstance(literal, exp.Literal) and literal.is_string and literal.this == ''):
                     errors.append(f'{field.name} é numérico: não compare com string vazia; para representação textual use toString({field.sql()}) e preserve os demais filtros')
-    if re.search(r'maior (?:competencia|comp)\b|competencia mais recente', q):
+    if re.search(r'maior (?:competencia|comp)\b|competencia mais recente|levantamento mais recente', q):
         def constrains_period(node):
             if isinstance(node, exp.Paren):
                 return constrains_period(node.this)
@@ -173,6 +197,36 @@ def contract_errors(sql, question, columns=()):
             if len(select.expressions) == 1 and isinstance(select.expressions[0].unalias(), exp.Max):
                 continue
             where = select.args.get('where')
-            if not where or not constrains_period(where.this):
+            # A scalar MAX(COMP) joined by equality also constrains the snapshot.
+            joined_period = False
+            from sqlglot.optimizer.scope import Scope, traverse_scope
+            scope = next((s for s in traverse_scope(tree) if s.expression is select), None)
+            for join in select.args.get('joins', []):
+                if join.args.get('side') or str(join.args.get('kind') or '').upper() not in ('', 'INNER'):
+                    continue
+                on = join.args.get('on')
+                if not isinstance(on, exp.EQ) or not isinstance(join.this, exp.Table) or scope is None:
+                    continue
+                right = scope.sources.get(join.this.alias_or_name)
+                if not isinstance(right, Scope) or not isinstance(right.expression, exp.Select):
+                    continue
+                scalar = right.expression
+                if scalar.args.get('group') or len(scalar.expressions) != 1:
+                    continue
+                projection = scalar.expressions[0]
+                metric = projection.unalias()
+                if not isinstance(metric, exp.Max) or not isinstance(metric.this, exp.Column) or metric.this.name.lower() != 'comp':
+                    continue
+                scalar_from = scalar.args.get('from_') or scalar.args.get('from')
+                if not scalar_from or not isinstance(scalar_from.this, exp.Table) or scalar_from.this.name.lower() != 'leitos':
+                    continue
+                for left, right_column in ((on.this,on.expression),(on.expression,on.this)):
+                    if (isinstance(left,exp.Column) and left.name.lower()=='comp'
+                            and left.table in ('',source.this.alias_or_name)
+                            and isinstance(right_column,exp.Column)
+                            and right_column.table==join.this.alias_or_name
+                            and right_column.name==projection.alias_or_name):
+                        joined_period = True
+            if not joined_period and (not where or not constrains_period(where.this)):
                 errors.append('Filtro de competência ausente em uma alternativa OR; agrupe as alternativas sob o filtro temporal')
     return errors
