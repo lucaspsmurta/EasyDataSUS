@@ -80,3 +80,14 @@ Os resultados já estão em seus caminhos originais. A documentação local em `
 ## Revisão manual dos dois perfis
 
 A pasta [avaliacao_manual](avaliacao_manual/README.md) reúne a ficha preenchida, o template sem julgamentos e a consolidação das rodadas uniformes r1. Esses materiais são citados nos capítulos 4 e 6 e não modificam os indicadores automáticos nem o manifesto histórico.
+
+## Novas execuções dos dois perfis
+
+As rodadas uniformes r2 preservam novas execuções completas de 68 casos por perfil, com Qwen2.5-Coder 7B e estratégia `llm_first`.
+
+| Execução | Correspondência com referências | Sucesso operacional | Limitações reconhecidas |
+|---|---|---|---|
+| [Perfil de usuário, r2](acuracia_qwen_usuario_uniforme_r2.json) | 46/64 (71,88%) | 62/64 (96,88%) | 4/4 |
+| [Perfil técnico, r2](acuracia_qwen_tecnico_uniforme_r2.json) | 55/64 (85,94%) | 61/64 (95,31%) | 4/4 |
+
+Os totais coincidem com os das rodadas r1, mas os registros individuais das execuções são distintos. Os arquivos preservam os metadados originais, inclusive os indicadores de referências em rascunho. A revisão manual documentada da r1 não é transferida automaticamente para estas rodadas. Estes resultados complementares não substituem os arquivos analisados na dissertação nem alteram o manifesto histórico.
