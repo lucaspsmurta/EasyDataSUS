@@ -1,0 +1,752 @@
+{
+  "reference_sha256": "23409007af266d5a6b94f385c59cf5b804e2ce41e8f2db58eb2be86bc373c054",
+  "model": "qwen2.5-coder:7b",
+  "resolved_model": "qwen2.5-coder:7b",
+  "strategy": "llm_first",
+  "started_at": "2026-10-24T23:16:12.163705+00:00",
+  "reference_reviewed": false,
+  "valid_for_claims": false,
+  "results": [
+    {
+      "id": 41,
+      "question": "Quantas notificações de SRAG registram cada um destes sintomas: febre, tosse, dor de garganta, dificuldade para respirar, diarreia e vômito? Uma notificação pode ter mais de um sintoma. Considere todo o período e todos os locais disponíveis, contando notificações independentemente da classificação final do caso.",
+      "expected_datasets": [
+        "surtos-srag"
+      ],
+      "expected_relationships": [],
+      "expected_behavior": "answer",
+      "assessment": {
+        "status": "technical_failure",
+        "result_correct": false
+      },
+      "dataset_selection_exact_match": true,
+      "relationship_selection_exact_match": true,
+      "elapsed_seconds": 277.1719999999041,
+      "response": {
+        "question": "Quantas notificações de SRAG registram cada um destes sintomas: febre, tosse, dor de garganta, dificuldade para respirar, diarreia e vômito? Uma notificação pode ter mais de um sintoma. Considere todo o período e todos os locais disponíveis, contando notificações independentemente da classificação final do caso.",
+        "dataset": "surtos-srag",
+        "datasets": [
+          "surtos-srag"
+        ],
+        "cross_dataset": false,
+        "relationships": [],
+        "routing_mode": "heuristic_single_dataset",
+        "sql_generation_mode": "llm_error",
+        "llm_sql_attempted": true,
+        "validation": {
+          "valid": false,
+          "tables": [],
+          "joins": [],
+          "errors": []
+        },
+        "sql": null,
+        "columns": [],
+        "highlights": [],
+        "analytical_limitations": [],
+        "warnings": [],
+        "data": {
+          "error": "Não foi possível gerar uma consulta válida"
+        },
+        "insight": "Desculpe, não consegui entender sua pergunta.",
+        "factual_summary": "",
+        "interpretation_mode": "none",
+        "answerability": {},
+        "success": false,
+        "evaluation_metrics": {
+          "ready_for_experiment": true,
+          "automatic_metrics": {
+            "success": false,
+            "sql_valid": false,
+            "query_executed": false,
+            "answerable": true,
+            "has_sql": false,
+            "has_result_rows": false,
+            "row_count": 0,
+            "column_count": 0,
+            "dataset_count": 1,
+            "relationship_count": 0,
+            "cross_dataset": false,
+            "llm_sql_attempted": true,
+            "response_has_insight": true,
+            "response_has_factual_summary": false,
+            "warning_count": 0,
+            "failure_stage": "sql_generation",
+            "total_time_s": 277.17
+          },
+          "generation": {
+            "routing_mode": "heuristic_single_dataset",
+            "sql_generation_mode": "llm_error",
+            "interpretation_mode": "none"
+          },
+          "selected": {
+            "datasets": [
+              "surtos-srag"
+            ],
+            "relationships": [],
+            "tables": [],
+            "joins": []
+          },
+          "reference_dependent_metrics": {
+            "expected_datasets": null,
+            "dataset_selection_exact_match": null,
+            "expected_relationships": null,
+            "relationship_selection_exact_match": null,
+            "expected_sql": null,
+            "exact_match": null,
+            "expected_result": null,
+            "execution_accuracy": null,
+            "response_fidelity": null
+          },
+          "notes": [
+            "Métricas como Exact Match, Execution Accuracy, seleção correta de datasets/relacionamentos e fidelidade da resposta dependem de gabarito externo."
+          ]
+        },
+        "timing_s": {
+          "dataset_selection": 0.0,
+          "relationship_lookup": 0.0,
+          "context_construction": 0.0,
+          "sql_generation": 277.17,
+          "sanitization": 0.0,
+          "validation": 0.0,
+          "database_execution": 0.0,
+          "interpretation": 0.0,
+          "other_processing": 0.0,
+          "interpretation_llm": 0.0,
+          "sql_generation_llm": 277.17,
+          "total": 277.17
+        },
+        "generation_diagnostics": [
+          {
+            "stage": "analytical_intent",
+            "question": "Quantas notificações de SRAG registram cada um destes sintomas: febre, tosse, dor de garganta, dificuldade para respirar, diarreia e vômito? Uma notificação pode ter mais de um sintoma. Considere todo o período e todos os locais disponíveis, contando notificações independentemente da classificação final do caso.",
+            "explicit_cues": [
+              "Não inventar um filtro temporal adicional nas bases cujo período completo foi pedido."
+            ],
+            "requirements": [],
+            "policy": "Não inventar local, período, denominador ou unidade de contagem. Preservar a pergunta inteira; os indícios não substituem sua leitura."
+          },
+          {
+            "stage": "llm_response",
+            "model": "qwen2.5-coder:7b",
+            "response": "```sql\nSELECT \n    FEBRE AS sintoma,\n    COUNT(*) AS total_notificacoes\nFROM \n    srag\nWHERE \n    FEBRE IN (1, 2, 9)\nUNION ALL\nSELECT \n    TOSSE AS sintoma,\n    COUNT(*) AS total_notificacoes\nFROM \n    srag\nWHERE \n    TOSSE IN (1, 2, 9)\nUNION ALL\nSELECT \n    GARGANTA AS sintoma,\n    COUNT(*) AS total_notificacoes\nFROM \n    srag\nWHERE \n    GARGANTA IN (1, 2, 9)\nUNION ALL\nSELECT \n    DISPNEIA AS sintoma,\n    COUNT(*) AS total_notificacoes\nFROM \n    srag\nWHERE \n    DISPNEIA IN (1, 2, 9)\nUNION ALL\nSELECT \n    DIARREIA AS sintoma,\n    COUNT(*) AS total_notificacoes\nFROM \n    srag\nWHERE \n    DIARREIA IN (1, 2, 9)\nUNION ALL\nSELECT \n    VOMITO AS sintoma,\n    COUNT(*) AS total_notificacoes\nFROM \n    srag\nWHERE \n    VOMITO IN (1, 2, 9);\n```",
+            "options": {
+              "temperature": 0.0,
+              "top_p": 1,
+              "num_ctx": 8192,
+              "num_predict": 1024
+            },
+            "prompt_characters": 9683,
+            "done_reason": "stop",
+            "eval_count": 273
+          },
+          {
+            "stage": "sql_validation",
+            "attempt": 1,
+            "sql": "SELECT febre AS sintoma, COUNT(*) AS total_notificacoes FROM srag WHERE febre IN (1, 2, 9) UNION ALL SELECT tosse AS sintoma, COUNT(*) AS total_notificacoes FROM srag WHERE tosse IN (1, 2, 9) UNION ALL SELECT garganta AS sintoma, COUNT(*) AS total_notificacoes FROM srag WHERE garganta IN (1, 2, 9) UNION ALL SELECT dispneia AS sintoma, COUNT(*) AS total_notificacoes FROM srag WHERE dispneia IN (1, 2, 9) UNION ALL SELECT diarreia AS sintoma, COUNT(*) AS total_notificacoes FROM srag WHERE diarreia IN (1, 2, 9) UNION ALL SELECT vomito AS sintoma, COUNT(*) AS total_notificacoes FROM srag WHERE vomito IN (1, 2, 9)",
+            "errors": [
+              "ClickHouse: :HTTPDriver for http://localhost:8123 returned response code 500)\n Code: 215. DB::Exception: Column default.srag.febre is not under aggregate function and not in GROUP BY keys. In query SELECT febre AS sintoma, COUNT(*) AS total_notificacoes FROM srag WHERE febre IN (1, 2, 9). (NOT_AN_AGGREGATE) (version 24.3.3.102 (official build))\n"
+            ]
+          },
+          {
+            "stage": "llm_response",
+            "model": "qwen2.5-coder:7b",
+            "response": "```sql\nWITH sintomas AS (\n    SELECT febre, COUNT(*) AS total_febre FROM srag WHERE febre IN (1, 2, 9) GROUP BY febre\n    UNION ALL\n    SELECT tosse, COUNT(*) AS total_tosse FROM srag WHERE tosse IN (1, 2, 9) GROUP BY tosse\n    UNION ALL\n    SELECT garganta, COUNT(*) AS total_garganta FROM srag WHERE garganta IN (1, 2, 9) GROUP BY garganta\n    UNION ALL\n    SELECT dispneia, COUNT(*) AS total_dispneia FROM srag WHERE dispneia IN (1, 2, 9) GROUP BY dispneia\n    UNION ALL\n    SELECT diarreia, COUNT(*) AS total_diarreia FROM srag WHERE diarreia IN (1, 2, 9) GROUP BY diarreia\n    UNION ALL\n    SELECT vomito, COUNT(*) AS total_vomito FROM srag WHERE vomito IN (1, 2, 9) GROUP BY vomito\n)\nSELECT sintoma, total_notificacoes\nFROM sintomas\nORDER BY total_notificacoes DESC;\n```",
+            "options": {
+              "temperature": 0.0,
+              "top_p": 1,
+              "num_ctx": 8192,
+              "num_predict": 1024
+            },
+            "prompt_characters": 11059,
+            "done_reason": "stop",
+            "eval_count": 260
+          },
+          {
+            "stage": "sql_validation",
+            "attempt": 2,
+            "sql": "WITH sintomas AS (SELECT febre, COUNT(*) AS total_febre FROM srag WHERE febre IN (1, 2, 9) GROUP BY febre UNION ALL SELECT tosse, COUNT(*) AS total_tosse FROM srag WHERE tosse IN (1, 2, 9) GROUP BY tosse UNION ALL SELECT garganta, COUNT(*) AS total_garganta FROM srag WHERE garganta IN (1, 2, 9) GROUP BY garganta UNION ALL SELECT dispneia, COUNT(*) AS total_dispneia FROM srag WHERE dispneia IN (1, 2, 9) GROUP BY dispneia UNION ALL SELECT diarreia, COUNT(*) AS total_diarreia FROM srag WHERE diarreia IN (1, 2, 9) GROUP BY diarreia UNION ALL SELECT vomito, COUNT(*) AS total_vomito FROM srag WHERE vomito IN (1, 2, 9) GROUP BY vomito) SELECT sintoma, total_notificacoes FROM sintomas ORDER BY total_notificacoes DESC",
+            "errors": [
+              "Conte cada sintoma separadamente com countIf(indicador=1); GROUP BY dos indicadores produz combinações, não os totais por sintoma.",
+              "Coluna não autorizada: sintoma"
+            ]
+          },
+          {
+            "stage": "llm_response",
+            "model": "qwen2.5-coder:7b",
+            "response": "```sql\nWITH sintomas AS (\n    SELECT \n        'Febre' AS sintoma, COUNT(*) AS total_febre FROM srag WHERE febre = 1\n    UNION ALL\n    SELECT \n        'Tosse' AS sintoma, COUNT(*) AS total_tosse FROM srag WHERE tosse = 1\n    UNION ALL\n    SELECT \n        'Dor de Garganta' AS sintoma, COUNT(*) AS total_garganta FROM srag WHERE garganta = 1\n    UNION ALL\n    SELECT \n        'Dificuldade para Respirar' AS sintoma, COUNT(*) AS total_dispneia FROM srag WHERE dispneia = 1\n    UNION ALL\n    SELECT \n        'Diarreia' AS sintoma, COUNT(*) AS total_diarreia FROM srag WHERE diarreia = 1\n    UNION ALL\n    SELECT \n        'Vômito' AS sintoma, COUNT(*) AS total_vomito FROM srag WHERE vomito = 1\n)\nSELECT sintoma, total_notificacoes FROM sintomas ORDER BY total_notificacoes DESC\n```",
+            "options": {
+              "temperature": 0.0,
+              "top_p": 1,
+              "num_ctx": 8192,
+              "num_predict": 1024
+            },
+            "prompt_characters": 12118,
+            "done_reason": "stop",
+            "eval_count": 242
+          },
+          {
+            "stage": "sql_validation",
+            "attempt": 3,
+            "sql": "WITH sintomas AS (SELECT 'Febre' AS sintoma, COUNT(*) AS total_febre FROM srag WHERE febre = 1 UNION ALL SELECT 'Tosse' AS sintoma, COUNT(*) AS total_tosse FROM srag WHERE tosse = 1 UNION ALL SELECT 'Dor de Garganta' AS sintoma, COUNT(*) AS total_garganta FROM srag WHERE garganta = 1 UNION ALL SELECT 'Dificuldade para Respirar' AS sintoma, COUNT(*) AS total_dispneia FROM srag WHERE dispneia = 1 UNION ALL SELECT 'Diarreia' AS sintoma, COUNT(*) AS total_diarreia FROM srag WHERE diarreia = 1 UNION ALL SELECT 'Vômito' AS sintoma, COUNT(*) AS total_vomito FROM srag WHERE vomito = 1) SELECT sintoma, total_notificacoes FROM sintomas ORDER BY total_notificacoes DESC",
+            "errors": [
+              "Coluna não autorizada: total_notificacoes"
+            ]
+          }
+        ]
+      }
+    }
+  ],
+  "snapshot_after": {
+    "vacinacao": {
+      "schema": [
+        [
+          "document_id",
+          "String"
+        ],
+        [
+          "paciente_id",
+          "String"
+        ],
+        [
+          "paciente_idade",
+          "Int32"
+        ],
+        [
+          "paciente_dataNascimento",
+          "Nullable(Date32)"
+        ],
+        [
+          "paciente_enumSexoBiologico",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_racaCor_codigo",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_racaCor_valor",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_endereco_coIbgeMunicipio",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_endereco_coPais",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_endereco_nmMunicipio",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_endereco_nmPais",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_endereco_uf",
+          "String"
+        ],
+        [
+          "paciente_endereco_cep",
+          "Nullable(String)"
+        ],
+        [
+          "paciente_nacionalidade_enumNacionalidade",
+          "Nullable(String)"
+        ],
+        [
+          "estabelecimento_valor",
+          "Nullable(String)"
+        ],
+        [
+          "estabelecimento_razaoSocial",
+          "Nullable(String)"
+        ],
+        [
+          "estalecimento_noFantasia",
+          "Nullable(String)"
+        ],
+        [
+          "estabelecimento_municipio_codigo",
+          "Nullable(String)"
+        ],
+        [
+          "estabelecimento_municipio_nome",
+          "Nullable(String)"
+        ],
+        [
+          "estabelecimento_uf",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_grupoAtendimento_codigo",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_grupoAtendimento_nome",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_categoria_codigo",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_categoria_nome",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_lote",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_fabricante_nome",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_fabricante_referencia",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_dataAplicacao",
+          "Nullable(Date)"
+        ],
+        [
+          "vacina_descricao_dose",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_codigo",
+          "Nullable(String)"
+        ],
+        [
+          "vacina_nome",
+          "Nullable(String)"
+        ],
+        [
+          "sistema_origem",
+          "Nullable(String)"
+        ]
+      ],
+      "fingerprint": [
+        [
+          390911,
+          16410427911288951712,
+          6684311057660204756
+        ]
+      ]
+    },
+    "atencao_basica": {
+      "schema": [
+        [
+          "cnes",
+          "Int32"
+        ],
+        [
+          "uf",
+          "Int32"
+        ],
+        [
+          "ibge",
+          "Int32"
+        ],
+        [
+          "nome",
+          "String"
+        ],
+        [
+          "logradouro",
+          "String"
+        ],
+        [
+          "bairro",
+          "String"
+        ],
+        [
+          "latitude",
+          "Float64"
+        ],
+        [
+          "longitude",
+          "Float64"
+        ]
+      ],
+      "fingerprint": [
+        [
+          47721,
+          2459148172205492570,
+          9507749961776021408
+        ]
+      ]
+    },
+    "srag": {
+      "schema": [
+        [
+          "nu_notific",
+          "Int64"
+        ],
+        [
+          "dt_notific",
+          "Date"
+        ],
+        [
+          "sem_not",
+          "Int32"
+        ],
+        [
+          "dt_sin_pri",
+          "Date"
+        ],
+        [
+          "sg_uf_not",
+          "String"
+        ],
+        [
+          "co_mun_not",
+          "Int32"
+        ],
+        [
+          "cs_sexo",
+          "String"
+        ],
+        [
+          "dt_nasc",
+          "Date"
+        ],
+        [
+          "nu_idade_n",
+          "Int32"
+        ],
+        [
+          "febre",
+          "Int32"
+        ],
+        [
+          "tosse",
+          "Int32"
+        ],
+        [
+          "garganta",
+          "Int32"
+        ],
+        [
+          "dispneia",
+          "Int32"
+        ],
+        [
+          "diarreia",
+          "Int32"
+        ],
+        [
+          "vomito",
+          "Int32"
+        ],
+        [
+          "cardiopati",
+          "Int32"
+        ],
+        [
+          "diabetes",
+          "Int32"
+        ],
+        [
+          "asma",
+          "Int32"
+        ],
+        [
+          "pneumopati",
+          "Int32"
+        ],
+        [
+          "imunodepre",
+          "Int32"
+        ],
+        [
+          "renal",
+          "Int32"
+        ],
+        [
+          "obesidade",
+          "Int32"
+        ],
+        [
+          "hospital",
+          "Int32"
+        ],
+        [
+          "dt_interna",
+          "Date"
+        ],
+        [
+          "co_mu_inte",
+          "Int32"
+        ],
+        [
+          "uti",
+          "Int32"
+        ],
+        [
+          "amostra",
+          "Int32"
+        ],
+        [
+          "dt_coleta",
+          "Date"
+        ],
+        [
+          "pcr_resul",
+          "Int32"
+        ],
+        [
+          "pos_pcrflu",
+          "Int32"
+        ],
+        [
+          "tp_flu_pcr",
+          "Int32"
+        ],
+        [
+          "pcr_vsr",
+          "Int32"
+        ],
+        [
+          "pcr_sars2",
+          "Int32"
+        ],
+        [
+          "classi_fin",
+          "Int32"
+        ],
+        [
+          "evolucao",
+          "Int32"
+        ],
+        [
+          "dt_evoluca",
+          "Date"
+        ],
+        [
+          "vacina_cov",
+          "Int32"
+        ],
+        [
+          "dose_1_cov",
+          "Date"
+        ],
+        [
+          "dose_2_cov",
+          "Date"
+        ],
+        [
+          "tp_idade",
+          "Nullable(Int32)"
+        ],
+        [
+          "hematologi",
+          "Int32"
+        ],
+        [
+          "hepatica",
+          "Int32"
+        ],
+        [
+          "neurologic",
+          "Int32"
+        ]
+      ],
+      "fingerprint": [
+        [
+          92156,
+          4211505937439072982,
+          13203673806342345248
+        ]
+      ]
+    },
+    "leitos": {
+      "schema": [
+        [
+          "COMP",
+          "String"
+        ],
+        [
+          "REGIAO",
+          "String"
+        ],
+        [
+          "UF",
+          "String"
+        ],
+        [
+          "CO_IBGE",
+          "String"
+        ],
+        [
+          "MUNICIPIO",
+          "String"
+        ],
+        [
+          "MOTIVO_DESABILITACAO",
+          "Nullable(String)"
+        ],
+        [
+          "CNES",
+          "String"
+        ],
+        [
+          "NOME_ESTABELECIMENTO",
+          "String"
+        ],
+        [
+          "RAZAO_SOCIAL",
+          "Nullable(String)"
+        ],
+        [
+          "TP_GESTAO",
+          "Nullable(String)"
+        ],
+        [
+          "CO_TIPO_UNIDADE",
+          "Nullable(String)"
+        ],
+        [
+          "DS_TIPO_UNIDADE",
+          "Nullable(String)"
+        ],
+        [
+          "NATUREZA_JURIDICA",
+          "Nullable(String)"
+        ],
+        [
+          "DESC_NATUREZA_JURIDICA",
+          "Nullable(String)"
+        ],
+        [
+          "NO_LOGRADOURO",
+          "Nullable(String)"
+        ],
+        [
+          "NU_ENDERECO",
+          "Nullable(String)"
+        ],
+        [
+          "NO_COMPLEMENTO",
+          "Nullable(String)"
+        ],
+        [
+          "NO_BAIRRO",
+          "Nullable(String)"
+        ],
+        [
+          "CO_CEP",
+          "Nullable(String)"
+        ],
+        [
+          "NU_TELEFONE",
+          "Nullable(String)"
+        ],
+        [
+          "NO_EMAIL",
+          "Nullable(String)"
+        ],
+        [
+          "LEITOS_EXISTENTES",
+          "Int32"
+        ],
+        [
+          "LEITOS_SUS",
+          "Int32"
+        ],
+        [
+          "UTI_TOTAL_EXIST",
+          "Int32"
+        ],
+        [
+          "UTI_TOTAL_SUS",
+          "Int32"
+        ],
+        [
+          "UTI_ADULTO_EXIST",
+          "Int32"
+        ],
+        [
+          "UTI_ADULTO_SUS",
+          "Int32"
+        ],
+        [
+          "UTI_PEDIATRICO_EXIST",
+          "Int32"
+        ],
+        [
+          "UTI_PEDIATRICO_SUS",
+          "Int32"
+        ],
+        [
+          "UTI_NEONATAL_EXIST",
+          "Int32"
+        ],
+        [
+          "UTI_NEONATAL_SUS",
+          "Int32"
+        ],
+        [
+          "UTI_QUEIMADO_EXIST",
+          "Int32"
+        ],
+        [
+          "UTI_QUEIMADO_SUS",
+          "Int32"
+        ],
+        [
+          "UTI_CORONARIANA_EXIST",
+          "Int32"
+        ],
+        [
+          "UTI_CORONARIANA_SUS",
+          "Int32"
+        ]
+      ],
+      "fingerprint": [
+        [
+          14414,
+          7018573817589441395,
+          3189018277022282231
+        ]
+      ]
+    }
+  },
+  "snapshot_unchanged": true,
+  "summary": {
+    "total": 1,
+    "analytical_denominator": 1,
+    "correct": 0,
+    "execution_accuracy": 0.0,
+    "operational_successes": 0,
+    "operational_success_rate": 0.0,
+    "limitation_denominator": 0,
+    "limitations_correct": 0,
+    "reference_pending": 0,
+    "statuses": {
+      "technical_failure": 1
+    },
+    "dataset_selection": {
+      "evaluated": 1,
+      "tp": 1,
+      "fp": 0,
+      "fn": 0,
+      "precision": 1.0,
+      "recall": 1.0,
+      "f1": 1.0
+    },
+    "relationship_selection": {
+      "evaluated": 0,
+      "tp": 0,
+      "fp": 0,
+      "fn": 0,
+      "precision": null,
+      "recall": null,
+      "f1": null
+    },
+    "response_fidelity": null,
+    "mismatch_reasons": {}
+  }
+}

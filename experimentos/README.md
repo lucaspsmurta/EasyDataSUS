@@ -91,3 +91,9 @@ As rodadas uniformes r2 preservam novas execuções completas de 68 casos por pe
 | [Perfil técnico, r2](acuracia_qwen_tecnico_uniforme_r2.json) | 55/64 (85,94%) | 61/64 (95,31%) | 4/4 |
 
 Os totais coincidem com os das rodadas r1, mas os registros individuais das execuções são distintos. Os arquivos preservam os metadados originais, inclusive os indicadores de referências em rascunho. A revisão manual documentada da r1 não é transferida automaticamente para estas rodadas. Estes resultados complementares não substituem os arquivos analisados na dissertação nem alteram o manifesto histórico.
+
+## Diagnóstico de desenvolvimento da Q41
+
+O arquivo [verificação isolada da Q41](acuracia_usuario_verificacao_reparo_q41.json) preserva uma execução de uma única pergunta sobre sintomas nas notificações de SRAG, com Qwen2.5-Coder 7B e estratégia `llm_first`. O registro contém uma falha técnica na geração de SQL válido, com duração de aproximadamente 277 segundos. Apesar do nome do arquivo, o resultado não comprova sucesso do reparo.
+
+Este diagnóstico não compõe os indicadores das rodadas completas de 68 casos nem substitui os resultados finais. Seus metadados originais foram mantidos. Os arquivos `*.partial.json` são checkpoints locais e não integram este conjunto versionado.
